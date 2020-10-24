@@ -1,0 +1,255 @@
+﻿<#@ template language="C#" Inherits="PluginCodeTemplateBase" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="RoRSkinModCreator.Data" #>
+<#@ import namespace="UnityEngine.Rendering" #>
+using BepInEx;
+using R2API;
+using R2API.Utils;
+using RoR2;
+using System;
+using System.Collections.Generic;
+using System.Reflection;
+using System.Linq;
+using UnityEngine;
+
+namespace <#= AssetsInfo.uccModName #>
+{
+<# foreach (var dependency in DistinctDependencies) { #>
+    [BepInDependency("<#= dependency.Key #>", BepInDependency.DependencyFlags.<#= Enum.GetName(typeof(DependencyType), dependency.Value) #>)]
+<# } #>
+    [R2APISubmoduleDependency(nameof(LoadoutAPI), nameof(LanguageAPI))]
+    [NetworkCompatibility(CompatibilityLevel.NoNeedForSync)]
+    [BepInDependency("com.bepis.r2api")]
+    [BepInPlugin("com.<#= SkinModInfo.author #>.<#= AssetsInfo.uccModName #>","<#= SkinModInfo.modName #>","<#= SkinModInfo.version #>")]
+    public partial class <#= AssetsInfo.uccModName #>Plugin : BaseUnityPlugin
+    {
+        private static AssetBundle assetBundle;
+<# if (AssetsInfo.materialsWithRoRShader.Count != 0) { #>
+        private static readonly List<Material> materialsWithRoRShader = new List<Material>();
+<# } #>
+        private void Awake()
+        {
+            BeforeAwake();
+            using (var assetStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("<#= AssetsInfo.uccModName #>.<#= AssetsInfo.assetBundleName #>"))
+            {
+                assetBundle = AssetBundle.LoadFromStream(assetStream);
+            }
+
+            On.RoR2.BodyCatalog.Init += BodyCatalogInit;
+
+            ReplaceShaders();
+            AddLanguageTokens();
+
+            AfterAwake();
+        }
+
+        partial void BeforeAwake();
+        partial void AfterAwake();
+        static partial void BeforeBodyCatalogInit();
+        static partial void AfterBodyCatalogInit();
+
+        private static void ReplaceShaders()
+        {
+<# foreach (var material in AssetsInfo.materialsWithRoRShader) { #>
+            materialsWithRoRShader.Add(LoadMaterialWithReplacedShader(@"<#= AssetsInfo.materialPaths[material.Key] #>", @"<#= material.Value #>"));
+<# } #>
+        }
+
+        private static Material LoadMaterialWithReplacedShader(string materialPath, string shaderName)
+        {
+            var material = assetBundle.LoadAsset<Material>(materialPath);
+            material.shader = Shader.Find(shaderName);
+
+            return material;
+        }
+
+        private static void AddLanguageTokens()
+        {
+<# foreach (var skin in ReorderedSkins) {
+    if (skin.nameTokenLocalizations.Count == 0) {
+        continue;
+    }
+    var defaultLocalization = skin.nameTokenLocalizations.FirstOrDefault(el => el.language.ToLower() == "en") ?? skin.nameTokenLocalizations.First(); #>
+            LanguageAPI.Add("<#= skin.CreateNameToken(SkinModInfo.author) #>", "<#= defaultLocalization.value #>");
+<# foreach (var localization in skin.nameTokenLocalizations) { #>
+            LanguageAPI.Add("<#= skin.CreateNameToken(SkinModInfo.author) #>", "<#= localization.value #>", "<#= localization.language #>");
+<#  }
+} #>
+        }
+
+        private static void BodyCatalogInit(On.RoR2.BodyCatalog.orig_Init orig)
+        {
+            orig();
+
+            BeforeBodyCatalogInit();
+
+<# foreach (var skin in ReorderedSkins) { #>
+            Add<#= skin.bodyName.ToUpperCamelCase() #><#= skin.name.ToUpperCamelCase() #>Skin();
+<# } #>
+
+            AfterBodyCatalogInit();
+        }
+<# foreach (var skin in ReorderedSkins) { #>
+
+        private static void Add<#= skin.bodyName.ToUpperCamelCase() #><#= skin.name.ToUpperCamelCase() #>Skin()
+        {
+<# if (!string.IsNullOrWhiteSpace(skin.modDependency.value) && skin.modDependency.type == DependencyType.SoftDependency) { #>
+            if (!BepInEx.Bootstrap.Chainloader.PluginInfos.ContainsKey("<#= skin.modDependency.value #>"))
+            {
+                return;
+            }
+<# } #>
+            var bodyName = "<#= skin.bodyName #>";
+            var skinName = "<#= skin.name #>";
+            try
+            {
+                var bodyPrefab = BodyCatalog.FindBodyPrefab(bodyName);
+
+                var renderers = bodyPrefab.GetComponentsInChildren<Renderer>(true);
+                var skinController = bodyPrefab.GetComponentInChildren<ModelSkinController>();
+                var mdl = skinController.gameObject;
+
+                var skin = new LoadoutAPI.SkinDefInfo
+                {
+<# if (!skin.icon.createFromColors && skin.icon.sprite != null) { #>
+                    Icon = assetBundle.LoadAsset<Sprite>(@"<#= AssetsInfo.iconPaths[skin.icon.sprite] #>"),
+<# } else { #>
+                    Icon = assetBundle.LoadAsset<Sprite>(@"<#= AssetsInfo.iconFromColorPaths[skin.icon.colors] #>"),
+<# } #>
+                    Name = skinName,
+                    NameToken = "<#= skin.CreateNameToken(SkinModInfo.author) #>",
+                    RootObject = mdl,
+<# if (skin.baseSkins.Count == 0) { #>
+                    BaseSkins = Array.Empty<SkinDef>(),
+<# } else { #>
+                    BaseSkins = new SkinDef[] 
+                    { 
+<# foreach (var reference in skin.baseSkins) { 
+    if (reference.accessType == AccessType.ByIndex) { #>
+                        skinController.skins[<#= reference.index #>],
+<# } else { #>
+                        skinController.skins.First(s => s.Name == "<#= reference.name #>")
+<# } 
+} #>
+                    },
+<# } #>
+                    UnlockableName = "<#= skin.unlockableName #>",
+<# if (skin.gameObjectActivations.Count == 0) { #>
+                    GameObjectActivations = Array.Empty<SkinDef.GameObjectActivation>(),
+<# } else { #>
+                    GameObjectActivations = new SkinDef.GameObjectActivation[]
+                    {
+<# foreach (var activation in skin.gameObjectActivations) { #>
+                        new SkinDef.GameObjectActivation
+                        {
+                            gameObject = renderers[<#= activation.rendererIndex #>].gameObject,
+                            shouldActivate = <# if (activation.shouldActivate) #>true<# else #>false
+                        },
+<# } #>
+                    },
+<# } 
+if (skin.rendererInfos.Count == 0) { #>
+                    RendererInfos = Array.Empty<CharacterModel.RendererInfo>();
+<# } else { #>
+                    RendererInfos = new CharacterModel.RendererInfo[]
+                    {
+<# foreach (var rendererInfo in skin.rendererInfos) { #>
+                        new CharacterModel.RendererInfo
+                        {
+<# if (rendererInfo.defaultMaterial == null) { #>
+                            defaultMaterial = null,
+<# } else { #>
+                            defaultMaterial = assetBundle.LoadAsset<Material>(@"<#= AssetsInfo.materialPaths[rendererInfo.defaultMaterial] #>"),
+<# } #>
+                            defaultShadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.<#= Enum.GetName(typeof(ShadowCastingMode), rendererInfo.defaultShadowCastingMode) #>,
+                            ignoreOverlays = <# if (rendererInfo.ignoreOverlays) #>true<# else #>false,
+<# if (rendererInfo.rendererReference.accessType == AccessType.ByIndex) { #>
+                            renderer = renderers[<#= rendererInfo.rendererReference.index #>]
+<# } else { #>
+                            renderer = renderers.First(r => r.name == "<#= rendererInfo.rendererReference.name #>")
+<# } #>
+                        },
+<# } #>
+                    },
+<# }
+if (skin.meshReplacements.Count == 0) { #>
+                    MeshReplacements = Array.Empty<SkinDef.MeshReplacement>(),
+<# } else { #>
+                    MeshReplacements = new SkinDef.MeshReplacement[]
+                    {
+<# foreach (var replacement in skin.meshReplacements) { #>
+                        new SkinDef.MeshReplacement
+                        {
+<# if (replacement.mesh == null) { #>
+                            mesh = null,
+<# } else { #>
+                            mesh = assetBundle.LoadAsset<Mesh>(@"<#= AssetsInfo.meshPaths[replacement.mesh] #>"),
+<# } 
+if (replacement.rendererReference.accessType == AccessType.ByIndex) { #>
+                            renderer = renderers[<#= replacement.rendererReference.index #>]
+<# } else { #>
+                            renderer = renderers.First(r => r.name == "<#= replacement.rendererReference.name #>")
+<# } #>
+                        },
+<# } #>
+                    },
+<# }
+if (skin.minionSkinReplacements.Count == 0) { #>
+                    MinionSkinReplacements = Array.Empty<SkinDef.MinionSkinReplacement>(),
+<# } else { #>
+                    MinionSkinReplacements = new SkinDef.MinionSkinReplacement[]
+                    {
+<# foreach (var replacement in skin.minionSkinReplacements) {
+    if (!replacement.findSkinByReference && replacement.skin == null) {
+        continue;
+    } #>
+                        new SkinDef.MinionSkinReplacement
+                        {
+                            minionBodyPrefab = BodyCatalog.FindBodyPrefab(@"<#= replacement.bodyName #>"),
+<# if (replacement.findSkinByReference) { 
+    if (replacement.reference.accessType == AccessType.ByIndex) { #>
+                            minionSkin = BodyCatalog.GetBodySkins(BodyCatalog.FindBodyIndex(@"<#= replacement.bodyName #>"))[<#= replacement.reference.index #>]
+<# } else { #>
+                            minionSkin = BodyCatalog.GetBodySkins(BodyCatalog.FindBodyIndex(@"<#= replacement.bodyName #>")).First(s => s.name == @"<#= replacement.reference.name #>")
+    <# }
+} else { #>
+                            minionSkin = BodyCatalog.GetBodySkins(BodyCatalog.FindBodyIndex(@"<#= replacement.bodyName #>")).First(s => s.name == @"<#= replacement.skin.name #>")
+<# } #>
+                        }
+<# } #>
+                    },
+<# } 
+if (skin.projectileGhostReplacements.Count == 0) { #>
+                    ProjectileGhostReplacements = Array.Empty<SkinDef.ProjectileGhostReplacement>()
+<# } else { #>
+                    ProjectileGhostReplacements = new SkinDef.ProjectileGhostReplacement[]
+                    {
+<# foreach (var replacement in skin.projectileGhostReplacements) { #>
+                        new SkinDef
+                        {
+                            projectilePrefab = Resources.Load<GameObject>(@"<#= replacement.projectilePath #>"),
+                            projectileGhostReplacementPrefab = assetBundle.LoadAsset<GameObject>(@"<#= AssetsInfo.gameObjectPaths[replacement.projectileGhost] #>")
+                        },
+<# } #>
+                    }
+<# } #>
+                };
+
+                Array.Resize(ref skinController.skins, skinController.skins.Length + 1);
+                skinController.skins[skinController.skins.Length - 1] = LoadoutAPI.CreateNewSkinDef(skin);
+
+                var skinsField = typeof(BodyCatalog).GetFieldValue<SkinDef[][]>("skins");
+                skinsField[BodyCatalog.FindBodyIndex(bodyPrefab)] = skinController.skins;
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning($"Failed to add \"{skinName}\" skin to \"{bodyName}\"");
+                Debug.LogError(e);
+            }
+        }
+<# } #>
+    }
+}
