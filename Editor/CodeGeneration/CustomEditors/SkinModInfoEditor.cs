@@ -4,6 +4,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using UnityEditor;
+using UnityEditor.Compilation;
 using UnityEngine;
 
 namespace RoRSkinBuilder.CustomEditors
@@ -39,12 +40,25 @@ namespace RoRSkinBuilder.CustomEditors
             }
             assetInfo.AddCsc();
 
-            AssetDatabase.Refresh();
-           
-            var buildFolder = Path.Combine(Environment.CurrentDirectory, "Builds", assetInfo.uccModName);
-            Directory.CreateDirectory(buildFolder);
-            File.Copy(Path.Combine(Environment.CurrentDirectory, "Library", "ScriptAssemblies", assetInfo.uccModName + ".dll"), Path.Combine(buildFolder, assetInfo.uccModName + ".dll"), true);
-            Process.Start(buildFolder);
+            AssetDatabase.ImportAsset(CompilationPipeline.GetAssemblyDefinitionFilePathFromAssemblyName(assetInfo.uccModName), ImportAssetOptions.ForceUpdate);
+            CompilationPipeline.assemblyCompilationFinished += WaitForCompilation;
+            
+            void WaitForCompilation(string assemblyPath, CompilerMessage[] messages)
+            {
+                if (assemblyPath.EndsWith(assetInfo.uccModName + ".dll"))
+                {
+                    CompilationPipeline.assemblyCompilationFinished -= WaitForCompilation;
+                }
+                if (messages.Length != 0)
+                {
+                    return;
+                }
+
+                var buildFolder = Path.Combine(Environment.CurrentDirectory, "Builds", assetInfo.uccModName);
+                Directory.CreateDirectory(buildFolder);
+                File.Copy(Path.Combine(Environment.CurrentDirectory, "Library", "ScriptAssemblies", assetInfo.uccModName + ".dll"), Path.Combine(buildFolder, assetInfo.uccModName + ".dll"), true);
+                Process.Start(buildFolder);
+            }
         }
 
         private static void ImportSkinApiSkins(SkinModInfo skinModInfo)

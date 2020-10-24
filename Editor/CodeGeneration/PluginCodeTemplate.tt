@@ -152,7 +152,7 @@ namespace <#= AssetsInfo.uccModName #>
                     },
 <# } 
 if (skin.rendererInfos.Count == 0) { #>
-                    RendererInfos = Array.Empty<CharacterModel.RendererInfo>();
+                    RendererInfos = Array.Empty<CharacterModel.RendererInfo>(),
 <# } else { #>
                     RendererInfos = new CharacterModel.RendererInfo[]
                     {

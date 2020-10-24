@@ -103,8 +103,7 @@ namespace RoRSkinBuilder.Data
             foreach (var mesh in meshSet)
             {
                 var path = AssetDatabase.GetAssetPath(mesh);
-                var extension = Path.GetExtension(path);
-                if (extension != ".mesh" && extension != ".asset")
+                if (AssetDatabase.IsSubAsset(mesh))
                 {
                     path = Path.Combine(tmpMeshesFolder, mesh.name + ".mesh");
                     AssetDatabase.CreateAsset(GameObject.Instantiate(mesh), path);

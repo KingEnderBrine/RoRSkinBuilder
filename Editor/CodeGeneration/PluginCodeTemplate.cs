@@ -519,7 +519,7 @@ if (skin.rendererInfos.Count == 0) {
             
             #line default
             #line hidden
-            this.Write("                    RendererInfos = Array.Empty<CharacterModel.RendererInfo>();\r\n" +
+            this.Write("                    RendererInfos = Array.Empty<CharacterModel.RendererInfo>(),\r\n" +
                     "");
             
             #line 156 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\PluginCodeTemplate.tt"
