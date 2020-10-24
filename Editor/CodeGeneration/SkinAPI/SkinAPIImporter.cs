@@ -69,6 +69,7 @@ namespace RoRSkinBuilder.SkinAPI
                 skinDefinition.gameObjectActivations = new List<GameObjectActivation>();
                 skinDefinition.minionSkinReplacements = new List<MinionSkinReplacement>();
                 skinDefinition.rendererInfos = new List<RendererInfo>();
+                skinDefinition.projectileGhostReplacements = new List<ProjectileGhostReplacement>();
                 
                 if (string.IsNullOrWhiteSpace(skinConfig.SkinMeshToUse))
                 {
