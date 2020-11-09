@@ -146,7 +146,8 @@ namespace <#= AssetsInfo.uccModName #>
                         new SkinDef.GameObjectActivation
                         {
                             gameObject = renderers[<#= activation.rendererIndex #>].gameObject,
-                            shouldActivate = <# if (activation.shouldActivate) #>true<# else #>false
+                            shouldActivate = <# if (activation.shouldActivate) #>true
+<# else #>false
                         },
 <# } #>
                     },
@@ -165,7 +166,8 @@ if (skin.rendererInfos.Count == 0) { #>
                             defaultMaterial = assetBundle.LoadAsset<Material>(@"<#= AssetsInfo.materialPaths[rendererInfo.defaultMaterial] #>"),
 <# } #>
                             defaultShadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.<#= Enum.GetName(typeof(ShadowCastingMode), rendererInfo.defaultShadowCastingMode) #>,
-                            ignoreOverlays = <# if (rendererInfo.ignoreOverlays) #>true<# else #>false,
+                            ignoreOverlays = <# if (rendererInfo.ignoreOverlays) #>true,
+<# else #>false,
 <# if (rendererInfo.rendererReference.accessType == AccessType.ByIndex) { #>
                             renderer = renderers[<#= rendererInfo.rendererReference.index #>]
 <# } else { #>

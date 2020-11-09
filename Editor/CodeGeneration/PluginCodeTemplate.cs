@@ -497,7 +497,7 @@ namespace RoRSkinBuilder
             
             #line default
             #line hidden
-            this.Write("true");
+            this.Write("true\r\n");
             
             #line 149 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\PluginCodeTemplate.tt"
  else 
@@ -579,7 +579,7 @@ if (skin.rendererInfos.Count == 0) {
             
             #line default
             #line hidden
-            this.Write("true");
+            this.Write("true,\r\n");
             
             #line 168 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\PluginCodeTemplate.tt"
  else 
