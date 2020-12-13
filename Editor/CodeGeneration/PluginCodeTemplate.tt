@@ -3,7 +3,7 @@
 <#@ import namespace="System.Linq" #>
 <#@ import namespace="System.Text" #>
 <#@ import namespace="System.Collections.Generic" #>
-<#@ import namespace="RoRSkinModCreator.Data" #>
+<#@ import namespace="RoRSkinBuilder.Data" #>
 <#@ import namespace="UnityEngine.Rendering" #>
 using BepInEx;
 using R2API;
@@ -93,6 +93,8 @@ namespace <#= AssetsInfo.uccModName #>
             AfterBodyCatalogInit();
         }
 <# foreach (var skin in ReorderedSkins) { #>
+
+        static partial void <#= skin.bodyName.ToUpperCamelCase() #><#= skin.name.ToUpperCamelCase() #>SkinAdded(SkinDef skinDef, GameObject bodyPrefab);
 
         private static void Add<#= skin.bodyName.ToUpperCamelCase() #><#= skin.name.ToUpperCamelCase() #>Skin()
         {
@@ -245,6 +247,7 @@ if (skin.projectileGhostReplacements.Count == 0) { #>
 
                 var skinsField = typeof(BodyCatalog).GetFieldValue<SkinDef[][]>("skins");
                 skinsField[BodyCatalog.FindBodyIndex(bodyPrefab)] = skinController.skins;
+                <#= skin.bodyName.ToUpperCamelCase() #><#= skin.name.ToUpperCamelCase() #>SkinAdded(skinController.skins[skinController.skins.Length - 1], bodyPrefab);
             }
             catch (Exception e)
             {
