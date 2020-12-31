@@ -232,10 +232,14 @@ if (skin.projectileGhostReplacements.Count == 0) { #>
                     ProjectileGhostReplacements = new SkinDef.ProjectileGhostReplacement[]
                     {
 <# foreach (var replacement in skin.projectileGhostReplacements) { #>
-                        new SkinDef
+                        new SkinDef.ProjectileGhostReplacement
                         {
                             projectilePrefab = Resources.Load<GameObject>(@"<#= replacement.projectilePath #>"),
+<# if (replacement.useResourcesPath) { #>
+                            projectileGhostReplacementPrefab = Resources.Load<GameObject>(@"<#= replacement.projectileGhostPath #>")
+<# } else { #>
                             projectileGhostReplacementPrefab = assetBundle.LoadAsset<GameObject>(@"<#= AssetsInfo.gameObjectPaths[replacement.projectileGhost] #>")
+<# } #>
                         },
 <# } #>
                     }
