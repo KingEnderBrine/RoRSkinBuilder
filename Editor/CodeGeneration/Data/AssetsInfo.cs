@@ -25,8 +25,8 @@ namespace RoRSkinBuilder.Data
             this.skinModInfo = skinModInfo;
             uccModName = skinModInfo.modName.ToUpperCamelCase();
             assetBundleName = (skinModInfo.author.ToUpperCamelCase() + uccModName).ToLower();
-            assetBundlePath = "SkinModAssets\\" + uccModName;
-            modFolder = "Assets\\SkinMods\\" + uccModName;
+            assetBundlePath = Path.Combine("SkinModAssets", uccModName);
+            modFolder = Path.Combine("Assets", "SkinMods", uccModName);
         }
 
         public void CreateNecessaryAssetsAndFillPaths()
