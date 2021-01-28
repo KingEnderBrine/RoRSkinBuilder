@@ -109,10 +109,19 @@ namespace <#= AssetsInfo.uccModName #>
             try
             {
                 var bodyPrefab = BodyCatalog.FindBodyPrefab(bodyName);
-
-                var renderers = bodyPrefab.GetComponentsInChildren<Renderer>(true);
                 var skinController = bodyPrefab.GetComponentInChildren<ModelSkinController>();
                 var mdl = skinController.gameObject;
+
+<# switch (skin.renderersSource)
+{
+    case RenderersSource.AllRendererComponents: #>
+                var renderers = bodyPrefab.GetComponentsInChildren<Renderer>(true);
+<#      break;
+    case RenderersSource.BaseRendererInfos: #>
+                var characterModel = skinController.GetComponent<CharacterModel>();
+                var renderers = characterModel.baseRendererInfos.Select(info => info.renderer).ToArray();
+<#      break;
+} #>
 
                 var skin = new LoadoutAPI.SkinDefInfo
                 {

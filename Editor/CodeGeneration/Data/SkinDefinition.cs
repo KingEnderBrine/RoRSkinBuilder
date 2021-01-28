@@ -18,6 +18,14 @@ namespace RoRSkinBuilder.Data
         public string unlockableName;
         [Tooltip("A list of skins that the game will apply before this one")]
         public List<Reference> baseSkins;
+        [Space(30)]
+        [Tooltip(@"Which way to populate renderers collection.
+
+AllRendererComponents - get all renderers on a prefab (including particles and disabled ones)
+
+BaseRendererInfos - get renderers from `CharacterModel.baseRendererInfos` field")]
+        public RenderersSource renderersSource;
+        [Space]
         [Tooltip("Replacements for in-game models")]
         public List<MeshReplacement> meshReplacements;
         [Tooltip("Disable/enable models when skin is used")]
