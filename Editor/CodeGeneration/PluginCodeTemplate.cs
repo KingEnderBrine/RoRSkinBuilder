@@ -359,8 +359,9 @@ namespace RoRSkinBuilder
             try
             {
                 var bodyPrefab = BodyCatalog.FindBodyPrefab(bodyName);
-                var skinController = bodyPrefab.GetComponentInChildren<ModelSkinController>();
-                var mdl = skinController.gameObject;
+                var modelLocator = bodyPrefab.GetComponent<ModelLocator>();
+                var mdl = modelLocator.modelTransform.gameObject;
+                var skinController = mdl.GetComponent<ModelSkinController>();
 
 ");
             
@@ -371,7 +372,7 @@ namespace RoRSkinBuilder
             
             #line default
             #line hidden
-            this.Write("                var renderers = bodyPrefab.GetComponentsInChildren<Renderer>(true" +
+            this.Write("                var renderers = mdl.GetComponentsInChildren<Renderer>(true" +
                     ");\r\n");
             
             #line 119 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
@@ -380,7 +381,7 @@ namespace RoRSkinBuilder
             
             #line default
             #line hidden
-            this.Write("                var characterModel = skinController.GetComponent<CharacterModel>(" +
+            this.Write("                var characterModel = mdl.GetComponent<CharacterModel>(" +
                     ");\r\n                var renderers = characterModel.baseRendererInfos.Select(info" +
                     " => info.renderer).ToArray();\r\n");
             
