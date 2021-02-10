@@ -232,7 +232,7 @@ if (skin.minionSkinReplacements.Count == 0) { #>
 } else { #>
                             minionSkin = BodyCatalog.GetBodySkins(BodyCatalog.FindBodyIndex(@"<#= replacement.bodyName #>")).First(s => s.name == @"<#= replacement.skin.name #>")
 <# } #>
-                        }
+                        },
 <# } #>
                     },
 <# } 
