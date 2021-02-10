@@ -865,7 +865,7 @@ if (skin.minionSkinReplacements.Count == 0) {
             
             #line default
             #line hidden
-            this.Write("                        }\r\n");
+            this.Write("                        },\r\n");
             
             #line 235 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
  } 
