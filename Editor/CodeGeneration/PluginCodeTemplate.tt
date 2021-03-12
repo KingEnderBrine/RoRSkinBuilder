@@ -125,9 +125,13 @@ namespace <#= AssetsInfo.uccModName #>
 
                 var skin = new LoadoutAPI.SkinDefInfo
                 {
-<# if (!skin.icon.createFromColors && skin.icon.sprite != null) { #>
+<# if (!skin.icon.createFromColors) {
+        if (skin.icon.sprite) { #>
                     Icon = assetBundle.LoadAsset<Sprite>(@"<#= AssetsInfo.iconPaths[skin.icon.sprite] #>"),
-<# } else { #>
+<#      } else { #>
+                    Icon = null,
+<#      } 
+    } else { #>
                     Icon = assetBundle.LoadAsset<Sprite>(@"<#= AssetsInfo.iconFromColorPaths[skin.icon.colors] #>"),
 <# } #>
                     Name = skinName,

@@ -69,12 +69,16 @@ namespace RoRSkinBuilder.Data
 
                     iconFromColorPaths[skin.icon.colors] = path;
                 }
-                else
+                else if (skin.icon.sprite)
                 {
                     iconPaths[skin.icon.sprite] = AssetDatabase.GetAssetPath(skin.icon.sprite);
                 }
                 foreach (var rendererInfo in skin.rendererInfos)
                 {
+                    if (!rendererInfo.defaultMaterial)
+                    {
+                        continue;
+                    }
                     materialPaths[rendererInfo.defaultMaterial] = AssetDatabase.GetAssetPath(rendererInfo.defaultMaterial);
                     if (rendererInfo.defaultMaterial.shader.name.StartsWith("Fake RoR/"))
                     {
@@ -84,7 +88,10 @@ namespace RoRSkinBuilder.Data
 
                 foreach (var meshReplacement in skin.meshReplacements)
                 {
-                    meshSet.Add(meshReplacement.mesh);
+                    if (meshReplacement.mesh)
+                    {
+                        meshSet.Add(meshReplacement.mesh);
+                    }
                 }
 
                 foreach (var projectileGhostReplacement in skin.projectileGhostReplacements)
