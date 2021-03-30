@@ -1,6 +1,6 @@
 {
     "name": "com.kingenderbrine.rorskinbuilder",
-    "version": "1.0.0",
+    "version": "2.0.0",
     "displayName": "RoR skin builder",
     "description": "Toolkit for making skins for Risk of Rain 2",
     "unity": "2018.4",

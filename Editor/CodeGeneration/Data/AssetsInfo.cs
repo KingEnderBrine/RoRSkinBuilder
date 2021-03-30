@@ -168,10 +168,9 @@ namespace RoRSkinBuilder.Data
     ""allowUnsafeCode"": false,
     ""overrideReferences"": true,
     ""precompiledReferences"": [
-        ""Assembly-CSharp.dll"",
+        ""Assembly-CSharp.refstub.dll"",
         ""BepInEx.dll"",
-        ""R2API.dll"",
-        ""MMHOOK_Assembly-CSharp.dll""
+        ""MonoMod.RuntimeDetour.dll""
     ],
     ""autoReferenced"": false,
     ""defineConstraints"": []

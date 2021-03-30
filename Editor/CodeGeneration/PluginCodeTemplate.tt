@@ -6,42 +6,52 @@
 <#@ import namespace="RoRSkinBuilder.Data" #>
 <#@ import namespace="UnityEngine.Rendering" #>
 using BepInEx;
-using R2API;
-using R2API.Utils;
+using BepInEx.Logging;
 using RoR2;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Linq;
 using UnityEngine;
+using System.Security;
+using System.Security.Permissions;
+using MonoMod.RuntimeDetour;
 
+#pragma warning disable CS0618 // Type or member is obsolete
+[module: UnverifiableCode]
+[assembly: SecurityPermission(SecurityAction.RequestMinimum, SkipVerification = true)]
+#pragma warning restore CS0618 // Type or member is obsolete
+[assembly: R2API.Utils.ManualNetworkRegistration]
+[assembly: EnigmaticThunder.Util.ManualNetworkRegistration]
 namespace <#= AssetsInfo.uccModName #>
 {
 <# foreach (var dependency in DistinctDependencies) { #>
     [BepInDependency("<#= dependency.Key #>", BepInDependency.DependencyFlags.<#= Enum.GetName(typeof(DependencyType), dependency.Value) #>)]
 <# } #>
-    [R2APISubmoduleDependency(nameof(LoadoutAPI), nameof(LanguageAPI))]
-    [NetworkCompatibility(CompatibilityLevel.NoNeedForSync)]
-    [BepInDependency("com.bepis.r2api")]
+    
     [BepInPlugin("com.<#= SkinModInfo.author #>.<#= AssetsInfo.uccModName #>","<#= SkinModInfo.modName #>","<#= SkinModInfo.version #>")]
     public partial class <#= AssetsInfo.uccModName #>Plugin : BaseUnityPlugin
     {
+        internal static <#= AssetsInfo.uccModName #>Plugin Instance { get; private set; }
+        internal static ManualLogSource InstanceLogger { get; private set; }
+        
         private static AssetBundle assetBundle;
 <# if (AssetsInfo.materialsWithRoRShader.Count != 0) { #>
         private static readonly List<Material> materialsWithRoRShader = new List<Material>();
 <# } #>
         private void Awake()
         {
+            Instance = this;
             BeforeAwake();
             using (var assetStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("<#= AssetsInfo.uccModName #>.<#= AssetsInfo.assetBundleName #>"))
             {
                 assetBundle = AssetBundle.LoadFromStream(assetStream);
             }
 
-            On.RoR2.BodyCatalog.Init += BodyCatalogInit;
+            BodyCatalog.availability.CallWhenAvailable(BodyCatalogInit);
+            new Hook(typeof(Language).GetMethod(nameof(Language.LoadStrings)), (Action<Action<Language>, Language>)LanguageLoadStrings).Apply();
 
             ReplaceShaders();
-            AddLanguageTokens();
 
             AfterAwake();
         }
@@ -66,29 +76,62 @@ namespace <#= AssetsInfo.uccModName #>
             return material;
         }
 
-        private static void AddLanguageTokens()
+        private static void LanguageLoadStrings(Action<Language> orig, Language self)
         {
-<# foreach (var skin in ReorderedSkins) {
+            orig(self);
+
+<# var tokensByLanguage = new Dictionary<string, KeyValuePair<string, List<string>>>();
+var defaultTokens = new Dictionary<string, string>();
+
+foreach (var skin in ReorderedSkins) {
     if (skin.nameTokenLocalizations.Count == 0) {
         continue;
     }
-    var defaultLocalization = skin.nameTokenLocalizations.FirstOrDefault(el => el.language.ToLower() == "en") ?? skin.nameTokenLocalizations.First(); #>
-            LanguageAPI.Add("<#= skin.CreateNameToken(SkinModInfo.author) #>", "<#= defaultLocalization.value #>");
-<# foreach (var localization in skin.nameTokenLocalizations) { #>
-            LanguageAPI.Add("<#= skin.CreateNameToken(SkinModInfo.author) #>", "<#= localization.value #>", "<#= localization.language #>");
-<#  }
+    var nameToken = skin.CreateNameToken(SkinModInfo.author);
+    defaultTokens[nameToken] = (skin.nameTokenLocalizations.FirstOrDefault(el => el.language.ToLower() == "en") ?? skin.nameTokenLocalizations.First()).value; 
+    
+    foreach (var localization in skin.nameTokenLocalizations) {
+        var language = localization.language.ToLower();
+        if (!tokensByLanguage.TryGetValue(language, out var tokens)) {
+            tokensByLanguage[language] = tokens = new KeyValuePair<string, List<string>>(nameToken, new List<string>());
+        }
+        tokens.Value.Add(localization.value);
+    } 
 } #>
+            switch(self.name.ToLower())
+            {
+<# foreach (var row in tokensByLanguage) { #>
+                case "<#= row.Key #>":
+<#     foreach (var value in row.Value.Value) { #>
+                    self.SetStringByToken("<#= row.Value.Key #>", "<#= value #>");
+<#     } #>
+                    break;
+<# } #>
+                default:
+<# foreach (var row in defaultTokens) { #>
+                    self.SetStringByToken("<#= row.Key #>", "<#= row.Value #>");
+                    break;
+<# } #>
+            }
         }
 
-        private static void BodyCatalogInit(On.RoR2.BodyCatalog.orig_Init orig)
+        private static void Nothing(Action<SkinDef> orig, SkinDef self)
         {
-            orig();
 
+        }
+
+        private static void BodyCatalogInit()
+        {
             BeforeBodyCatalogInit();
+
+            var hook = new Hook(typeof(SkinDef).GetMethod(nameof(SkinDef.Awake), BindingFlags.NonPublic | BindingFlags.Instance), (Action<Action<SkinDef>, SkinDef>)Nothing);
+            hook.Apply();
 
 <# foreach (var skin in ReorderedSkins) { #>
             Add<#= skin.bodyName.ToUpperCamelCase() #><#= skin.name.ToUpperCamelCase() #>Skin();
 <# } #>
+
+            hook.Undo();
 
             AfterBodyCatalogInit();
         }
@@ -124,155 +167,169 @@ namespace <#= AssetsInfo.uccModName #>
 <#      break;
 } #>
 
-                var skin = new LoadoutAPI.SkinDefInfo
-                {
+                var skin = ScriptableObject.CreateInstance<SkinDef>();
 <# if (!skin.icon.createFromColors) {
         if (skin.icon.sprite) { #>
-                    Icon = assetBundle.LoadAsset<Sprite>(@"<#= AssetsInfo.iconPaths[skin.icon.sprite] #>"),
+                skin.icon = assetBundle.LoadAsset<Sprite>(@"<#= AssetsInfo.iconPaths[skin.icon.sprite] #>");
 <#      } else { #>
-                    Icon = null,
+                skin.icon = null;
 <#      } 
     } else { #>
-                    Icon = assetBundle.LoadAsset<Sprite>(@"<#= AssetsInfo.iconFromColorPaths[skin.icon.colors] #>"),
+                skin.icon = assetBundle.LoadAsset<Sprite>(@"<#= AssetsInfo.iconFromColorPaths[skin.icon.colors] #>");
 <# } #>
-                    Name = skinName,
-                    NameToken = "<#= skin.CreateNameToken(SkinModInfo.author) #>",
-                    RootObject = mdl,
+                skin.name = skinName;
+                skin.nameToken = "<#= skin.CreateNameToken(SkinModInfo.author) #>";
+                skin.rootObject = mdl;
 <# if (skin.baseSkins.Count == 0) { #>
-                    BaseSkins = Array.Empty<SkinDef>(),
+                skin.baseSkins = Array.Empty<SkinDef>();
 <# } else { #>
-                    BaseSkins = new SkinDef[] 
-                    { 
+                skin.baseSkins = new SkinDef[] 
+                { 
 <# foreach (var reference in skin.baseSkins) { 
     if (reference.accessType == AccessType.ByIndex) { #>
-                        skinController.skins[<#= reference.index #>],
+                    skinController.skins[<#= reference.index #>],
 <# } else { #>
-                        skinController.skins.First(s => s.Name == "<#= reference.name #>")
+                    skinController.skins.First(s => s.Name == "<#= reference.name #>")
 <# } 
 } #>
-                    },
-<# } #>
-                    UnlockableName = "<#= skin.unlockableName #>",
-<# if (skin.gameObjectActivations.Count == 0) { #>
-                    GameObjectActivations = Array.Empty<SkinDef.GameObjectActivation>(),
+                };
+<# } 
+if (string.IsNullOrWhiteSpace(skin.unlockableName)) { #>
+                skin.unlockableDef = null;
 <# } else { #>
-                    GameObjectActivations = new SkinDef.GameObjectActivation[]
-                    {
+                skin.unlockableDef = ContentManager.UnlockableDef.FirstOrDefault(def => def.cachedName == "<#= skin.unlockableName #>");
+<# }
+if (skin.gameObjectActivations.Count == 0) { #>
+                skin.gameObjectActivations = Array.Empty<SkinDef.GameObjectActivation>();
+<# } else { #>
+                skin.gameObjectActivations = new SkinDef.GameObjectActivation[]
+                {
 <# foreach (var activation in skin.gameObjectActivations) { #>
-                        new SkinDef.GameObjectActivation
-                        {
-                            gameObject = renderers[<#= activation.rendererIndex #>].gameObject,
-                            shouldActivate = <# if (activation.shouldActivate) #>true
+                    new SkinDef.GameObjectActivation
+                    {
+                        gameObject = renderers[<#= activation.rendererIndex #>].gameObject,
+                        shouldActivate = <# if (activation.shouldActivate) #>true
 <# else #>false
-                        },
-<# } #>
                     },
+<# } #>
+                };
 <# } 
 if (skin.rendererInfos.Count == 0) { #>
-                    RendererInfos = Array.Empty<CharacterModel.RendererInfo>(),
+                skin.rendererInfos = Array.Empty<CharacterModel.RendererInfo>();
 <# } else { #>
-                    RendererInfos = new CharacterModel.RendererInfo[]
-                    {
+                skin.rendererInfos = new CharacterModel.RendererInfo[]
+                {
 <# foreach (var rendererInfo in skin.rendererInfos) { #>
-                        new CharacterModel.RendererInfo
-                        {
+                    new CharacterModel.RendererInfo
+                    {
 <# if (rendererInfo.defaultMaterial == null) { #>
-                            defaultMaterial = null,
+                        defaultMaterial = null,
 <# } else { #>
-                            defaultMaterial = assetBundle.LoadAsset<Material>(@"<#= AssetsInfo.materialPaths[rendererInfo.defaultMaterial] #>"),
+                        defaultMaterial = assetBundle.LoadAsset<Material>(@"<#= AssetsInfo.materialPaths[rendererInfo.defaultMaterial] #>"),
 <# } #>
-                            defaultShadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.<#= Enum.GetName(typeof(ShadowCastingMode), rendererInfo.defaultShadowCastingMode) #>,
-                            ignoreOverlays = <# if (rendererInfo.ignoreOverlays) #>true,
+                        defaultShadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.<#= Enum.GetName(typeof(ShadowCastingMode), rendererInfo.defaultShadowCastingMode) #>,
+                        ignoreOverlays = <# if (rendererInfo.ignoreOverlays) #>true,
 <# else #>false,
 <# if (rendererInfo.rendererReference.accessType == AccessType.ByIndex) { #>
-                            renderer = renderers[<#= rendererInfo.rendererReference.index #>]
+                        renderer = renderers[<#= rendererInfo.rendererReference.index #>]
 <# } else { #>
-                            renderer = renderers.First(r => r.name == "<#= rendererInfo.rendererReference.name #>")
-<# } #>
-                        },
+                        renderer = renderers.First(r => r.name == "<#= rendererInfo.rendererReference.name #>")
 <# } #>
                     },
+<# } #>
+                };
 <# }
 if (skin.meshReplacements.Count == 0) { #>
-                    MeshReplacements = Array.Empty<SkinDef.MeshReplacement>(),
+                skin.meshReplacements = Array.Empty<SkinDef.MeshReplacement>();
 <# } else { #>
-                    MeshReplacements = new SkinDef.MeshReplacement[]
-                    {
+                skin.meshReplacements = new SkinDef.MeshReplacement[]
+                {
 <# foreach (var replacement in skin.meshReplacements) { #>
-                        new SkinDef.MeshReplacement
-                        {
+                    new SkinDef.MeshReplacement
+                    {
 <# if (replacement.mesh == null) { #>
-                            mesh = null,
+                        mesh = null,
 <# } else { #>
-                            mesh = assetBundle.LoadAsset<Mesh>(@"<#= AssetsInfo.meshPaths[replacement.mesh] #>"),
+                        mesh = assetBundle.LoadAsset<Mesh>(@"<#= AssetsInfo.meshPaths[replacement.mesh] #>"),
 <# } 
 if (replacement.rendererReference.accessType == AccessType.ByIndex) { #>
-                            renderer = renderers[<#= replacement.rendererReference.index #>]
+                        renderer = renderers[<#= replacement.rendererReference.index #>]
 <# } else { #>
-                            renderer = renderers.First(r => r.name == "<#= replacement.rendererReference.name #>")
-<# } #>
-                        },
+                        renderer = renderers.First(r => r.name == "<#= replacement.rendererReference.name #>")
 <# } #>
                     },
+<# } #>
+                };
 <# }
 if (skin.minionSkinReplacements.Count == 0) { #>
-                    MinionSkinReplacements = Array.Empty<SkinDef.MinionSkinReplacement>(),
+                skin.minionSkinReplacements = Array.Empty<SkinDef.MinionSkinReplacement>();
 <# } else { #>
-                    MinionSkinReplacements = new SkinDef.MinionSkinReplacement[]
-                    {
+                skin.minionSkinReplacements = new SkinDef.MinionSkinReplacement[]
+                {
 <# foreach (var replacement in skin.minionSkinReplacements) {
     if (!replacement.findSkinByReference && replacement.skin == null) {
         continue;
     } #>
-                        new SkinDef.MinionSkinReplacement
-                        {
-                            minionBodyPrefab = BodyCatalog.FindBodyPrefab(@"<#= replacement.bodyName #>"),
+                    new SkinDef.MinionSkinReplacement
+                    {
+                        minionBodyPrefab = BodyCatalog.FindBodyPrefab(@"<#= replacement.bodyName #>"),
 <# if (replacement.findSkinByReference) { 
     if (replacement.reference.accessType == AccessType.ByIndex) { #>
-                            minionSkin = BodyCatalog.GetBodySkins(BodyCatalog.FindBodyIndex(@"<#= replacement.bodyName #>"))[<#= replacement.reference.index #>]
+                        minionSkin = BodyCatalog.GetBodySkins(BodyCatalog.FindBodyIndex(@"<#= replacement.bodyName #>"))[<#= replacement.reference.index #>]
 <# } else { #>
-                            minionSkin = BodyCatalog.GetBodySkins(BodyCatalog.FindBodyIndex(@"<#= replacement.bodyName #>")).First(s => s.name == @"<#= replacement.reference.name #>")
+                        minionSkin = BodyCatalog.GetBodySkins(BodyCatalog.FindBodyIndex(@"<#= replacement.bodyName #>")).First(s => s.name == @"<#= replacement.reference.name #>")
     <# }
 } else { #>
-                            minionSkin = BodyCatalog.GetBodySkins(BodyCatalog.FindBodyIndex(@"<#= replacement.bodyName #>")).First(s => s.name == @"<#= replacement.skin.name #>")
-<# } #>
-                        },
+                        minionSkin = BodyCatalog.GetBodySkins(BodyCatalog.FindBodyIndex(@"<#= replacement.bodyName #>")).First(s => s.name == @"<#= replacement.skin.name #>")
 <# } #>
                     },
-<# } 
-if (skin.projectileGhostReplacements.Count == 0) { #>
-                    ProjectileGhostReplacements = Array.Empty<SkinDef.ProjectileGhostReplacement>()
-<# } else { #>
-                    ProjectileGhostReplacements = new SkinDef.ProjectileGhostReplacement[]
-                    {
-<# foreach (var replacement in skin.projectileGhostReplacements) { #>
-                        new SkinDef.ProjectileGhostReplacement
-                        {
-                            projectilePrefab = Resources.Load<GameObject>(@"<#= replacement.projectilePath #>"),
-<# if (replacement.useResourcesPath) { #>
-                            projectileGhostReplacementPrefab = Resources.Load<GameObject>(@"<#= replacement.projectileGhostPath #>")
-<# } else { #>
-                            projectileGhostReplacementPrefab = assetBundle.LoadAsset<GameObject>(@"<#= AssetsInfo.gameObjectPaths[replacement.projectileGhost] #>")
-<# } #>
-                        },
-<# } #>
-                    }
 <# } #>
                 };
+<# } 
+if (skin.projectileGhostReplacements.Count == 0) { #>
+                skin.projectileGhostReplacements = Array.Empty<SkinDef.ProjectileGhostReplacement>();
+<# } else { #>
+                skin.projectileGhostReplacements = new SkinDef.ProjectileGhostReplacement[]
+                {
+<# foreach (var replacement in skin.projectileGhostReplacements) { #>
+                    new SkinDef.ProjectileGhostReplacement
+                    {
+                        projectilePrefab = Resources.Load<GameObject>(@"<#= replacement.projectilePath #>"),
+<# if (replacement.useResourcesPath) { #>
+                        projectileGhostReplacementPrefab = Resources.Load<GameObject>(@"<#= replacement.projectileGhostPath #>")
+<# } else { #>
+                        projectileGhostReplacementPrefab = assetBundle.LoadAsset<GameObject>(@"<#= AssetsInfo.gameObjectPaths[replacement.projectileGhost] #>")
+<# } #>
+                    },
+<# } #>
+                };
+<# } #>
 
                 Array.Resize(ref skinController.skins, skinController.skins.Length + 1);
-                skinController.skins[skinController.skins.Length - 1] = LoadoutAPI.CreateNewSkinDef(skin);
+                skinController.skins[skinController.skins.Length - 1] = skin;
 
-                var skinsField = typeof(BodyCatalog).GetFieldValue<SkinDef[][]>("skins");
-                skinsField[BodyCatalog.FindBodyIndex(bodyPrefab)] = skinController.skins;
-                <#= skin.bodyName.ToUpperCamelCase() #><#= skin.name.ToUpperCamelCase() #>SkinAdded(skinController.skins[skinController.skins.Length - 1], bodyPrefab);
+                BodyCatalog.skins[(int)BodyCatalog.FindBodyIndex(bodyPrefab)] = skinController.skins;
+                <#= skin.bodyName.ToUpperCamelCase() #><#= skin.name.ToUpperCamelCase() #>SkinAdded(skin, bodyPrefab);
             }
             catch (Exception e)
             {
-                Debug.LogWarning($"Failed to add \"{skinName}\" skin to \"{bodyName}\"");
-                Debug.LogError(e);
+                InstanceLogger.LogWarning($"Failed to add \"{skinName}\" skin to \"{bodyName}\"");
+                InstanceLogger.LogError(e);
             }
         }
 <# } #>
     }
+
+}
+
+namespace R2API.Utils
+{
+    [AttributeUsage(AttributeTargets.Assembly)]
+    public class ManualNetworkRegistrationAttribute : Attribute { }
+}
+
+namespace EnigmaticThunder.Util
+{
+    [AttributeUsage(AttributeTargets.Assembly)]
+    public class ManualNetworkRegistrationAttribute : Attribute { }
 }

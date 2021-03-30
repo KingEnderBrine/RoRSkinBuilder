@@ -8,7 +8,10 @@
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": false,
-    "precompiledReferences": [],
+    "precompiledReferences": [
+        "Assembly-CSharp.refstub.dll",
+        "BepInEx.dll"
+    ],
     "autoReferenced": true,
     "defineConstraints": []
 }

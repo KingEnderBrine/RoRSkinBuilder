@@ -20,38 +20,53 @@ namespace RoRSkinBuilder.CustomEditors
             {
                 Build(serializedObject.targetObject as SkinModInfo);
             }
+            if (GUILayout.Button("Build (Don't regenerate code)"))
+            {
+                Build(serializedObject.targetObject as SkinModInfo, false);
+            }
             if (GUILayout.Button("Import skins from RyanSkinAPI"))
             {
                 ImportSkinApiSkins(serializedObject.targetObject as SkinModInfo);
             }
         }
 
-        private static void Build(SkinModInfo skinModInfo)
+        private static void Build(SkinModInfo skinModInfo, bool regenerateCode = true)
         {
             var assetInfo = new AssetsInfo(skinModInfo);
             assetInfo.CreateNecessaryAssetsAndFillPaths();
-            
-            var pluginCode = new PluginCodeTemplate(skinModInfo, assetInfo);
-            File.WriteAllText(Path.Combine(assetInfo.modFolder, assetInfo.uccModName + "Plugin.cs"), pluginCode.TransformText());
-            
+
+            var path = Path.Combine(assetInfo.modFolder, assetInfo.uccModName + "Plugin.cs");
+            if (regenerateCode)
+            {
+                var pluginCode = new PluginCodeTemplate(skinModInfo, assetInfo);
+                File.WriteAllText(path, pluginCode.TransformText());
+            }
+
             if (!assetInfo.BuildAssetBundle())
             {
                 return;
             }
             assetInfo.AddCsc();
 
-            AssetDatabase.ImportAsset(CompilationPipeline.GetAssemblyDefinitionFilePathFromAssemblyName(assetInfo.uccModName), ImportAssetOptions.ForceUpdate);
+            AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceUpdate);
             CompilationPipeline.assemblyCompilationFinished += WaitForCompilation;
             
             void WaitForCompilation(string assemblyPath, CompilerMessage[] messages)
             {
-                if (assemblyPath.EndsWith(assetInfo.uccModName + ".dll"))
-                {
-                    CompilationPipeline.assemblyCompilationFinished -= WaitForCompilation;
-                }
-                if (messages.Length != 0)
+                if (!assemblyPath.EndsWith(assetInfo.uccModName + ".dll"))
                 {
                     return;
+                }
+                CompilationPipeline.assemblyCompilationFinished -= WaitForCompilation;
+                if (messages.Length != 0)
+                {
+                    foreach (var message in messages)
+                    {
+                        if (message.type == CompilerMessageType.Error)
+                        {
+                            return;
+                        }
+                    }
                 }
 
                 var buildFolder = Path.Combine(Environment.CurrentDirectory, "Builds", assetInfo.uccModName);
