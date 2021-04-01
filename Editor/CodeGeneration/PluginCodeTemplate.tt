@@ -80,7 +80,7 @@ namespace <#= AssetsInfo.uccModName #>
         {
             orig(self);
 
-<# var tokensByLanguage = new Dictionary<string, KeyValuePair<string, List<string>>>();
+<# var tokensByLanguage = new Dictionary<string, Dictionary<string, string>>();
 var defaultTokens = new Dictionary<string, string>();
 
 foreach (var skin in ReorderedSkins) {
@@ -91,27 +91,30 @@ foreach (var skin in ReorderedSkins) {
     defaultTokens[nameToken] = (skin.nameTokenLocalizations.FirstOrDefault(el => el.language.ToLower() == "en") ?? skin.nameTokenLocalizations.First()).value; 
     
     foreach (var localization in skin.nameTokenLocalizations) {
+        if (defaultTokens[nameToken] == localization.value) {
+            continue;
+        }
         var language = localization.language.ToLower();
         if (!tokensByLanguage.TryGetValue(language, out var tokens)) {
-            tokensByLanguage[language] = tokens = new KeyValuePair<string, List<string>>(nameToken, new List<string>());
+            tokensByLanguage[language] = tokens = new Dictionary<string, string>();
         }
-        tokens.Value.Add(localization.value);
+        tokens[nameToken] = localization.value;
     } 
 } #>
             switch(self.name.ToLower())
             {
 <# foreach (var row in tokensByLanguage) { #>
                 case "<#= row.Key #>":
-<#     foreach (var value in row.Value.Value) { #>
-                    self.SetStringByToken("<#= row.Value.Key #>", "<#= value #>");
+<#     foreach (var value in row.Value) { #>
+                    self.SetStringByToken("<#= value.Key #>", "<#= value.Value #>");
 <#     } #>
                     break;
 <# } #>
                 default:
 <# foreach (var row in defaultTokens) { #>
                     self.SetStringByToken("<#= row.Key #>", "<#= row.Value #>");
-                    break;
 <# } #>
+                    break;
             }
         }
 

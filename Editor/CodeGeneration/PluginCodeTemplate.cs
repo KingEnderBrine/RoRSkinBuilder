@@ -20,7 +20,7 @@ namespace RoRSkinBuilder
     /// Class to produce the template output
     /// </summary>
     
-    #line 1 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+    #line 1 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.TextTemplating", "16.0.0.0")]
     public partial class PluginCodeTemplate : PluginCodeTemplateBase
     {
@@ -50,77 +50,77 @@ using MonoMod.RuntimeDetour;
 [assembly: EnigmaticThunder.Util.ManualNetworkRegistration]
 namespace ");
             
-            #line 26 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 26 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(AssetsInfo.uccModName));
             
             #line default
             #line hidden
             this.Write("\r\n{\r\n");
             
-            #line 28 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 28 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
  foreach (var dependency in DistinctDependencies) { 
             
             #line default
             #line hidden
             this.Write("    [BepInDependency(\"");
             
-            #line 29 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 29 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(dependency.Key));
             
             #line default
             #line hidden
             this.Write("\", BepInDependency.DependencyFlags.");
             
-            #line 29 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 29 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(Enum.GetName(typeof(DependencyType), dependency.Value)));
             
             #line default
             #line hidden
             this.Write(")]\r\n");
             
-            #line 30 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 30 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
  } 
             
             #line default
             #line hidden
             this.Write("    \r\n    [BepInPlugin(\"com.");
             
-            #line 32 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 32 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(SkinModInfo.author));
             
             #line default
             #line hidden
             this.Write(".");
             
-            #line 32 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 32 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(AssetsInfo.uccModName));
             
             #line default
             #line hidden
             this.Write("\",\"");
             
-            #line 32 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 32 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(SkinModInfo.modName));
             
             #line default
             #line hidden
             this.Write("\",\"");
             
-            #line 32 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 32 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(SkinModInfo.version));
             
             #line default
             #line hidden
             this.Write("\")]\r\n    public partial class ");
             
-            #line 33 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 33 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(AssetsInfo.uccModName));
             
             #line default
             #line hidden
             this.Write("Plugin : BaseUnityPlugin\r\n    {\r\n        internal static ");
             
-            #line 35 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 35 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(AssetsInfo.uccModName));
             
             #line default
@@ -129,7 +129,7 @@ namespace ");
                     "stanceLogger { get; private set; }\r\n        \r\n        private static AssetBundle" +
                     " assetBundle;\r\n");
             
-            #line 39 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 39 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
  if (AssetsInfo.materialsWithRoRShader.Count != 0) { 
             
             #line default
@@ -137,7 +137,7 @@ namespace ");
             this.Write("        private static readonly List<Material> materialsWithRoRShader = new List<" +
                     "Material>();\r\n");
             
-            #line 41 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 41 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
  } 
             
             #line default
@@ -146,14 +146,14 @@ namespace ");
                     "  BeforeAwake();\r\n            using (var assetStream = Assembly.GetExecutingAsse" +
                     "mbly().GetManifestResourceStream(\"");
             
-            #line 46 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 46 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(AssetsInfo.uccModName));
             
             #line default
             #line hidden
             this.Write(".");
             
-            #line 46 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 46 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(AssetsInfo.assetBundleName));
             
             #line default
@@ -180,28 +180,28 @@ namespace ");
         {
 ");
             
-            #line 66 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 66 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
  foreach (var material in AssetsInfo.materialsWithRoRShader) { 
             
             #line default
             #line hidden
             this.Write("            materialsWithRoRShader.Add(LoadMaterialWithReplacedShader(@\"");
             
-            #line 67 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 67 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(AssetsInfo.materialPaths[material.Key]));
             
             #line default
             #line hidden
             this.Write("\", @\"");
             
-            #line 67 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 67 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(material.Value));
             
             #line default
             #line hidden
             this.Write("\"));\r\n");
             
-            #line 68 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 68 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
  } 
             
             #line default
@@ -222,8 +222,8 @@ namespace ");
 
 ");
             
-            #line 83 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
- var tokensByLanguage = new Dictionary<string, KeyValuePair<string, List<string>>>();
+            #line 83 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+ var tokensByLanguage = new Dictionary<string, Dictionary<string, string>>();
 var defaultTokens = new Dictionary<string, string>();
 
 foreach (var skin in ReorderedSkins) {
@@ -234,11 +234,14 @@ foreach (var skin in ReorderedSkins) {
     defaultTokens[nameToken] = (skin.nameTokenLocalizations.FirstOrDefault(el => el.language.ToLower() == "en") ?? skin.nameTokenLocalizations.First()).value; 
     
     foreach (var localization in skin.nameTokenLocalizations) {
+        if (defaultTokens[nameToken] == localization.value) {
+            continue;
+        }
         var language = localization.language.ToLower();
         if (!tokensByLanguage.TryGetValue(language, out var tokens)) {
-            tokensByLanguage[language] = tokens = new KeyValuePair<string, List<string>>(nameToken, new List<string>());
+            tokensByLanguage[language] = tokens = new Dictionary<string, string>();
         }
-        tokens.Value.Add(localization.value);
+        tokens[nameToken] = localization.value;
     } 
 } 
             
@@ -246,82 +249,83 @@ foreach (var skin in ReorderedSkins) {
             #line hidden
             this.Write("            switch(self.name.ToLower())\r\n            {\r\n");
             
-            #line 103 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 106 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
  foreach (var row in tokensByLanguage) { 
             
             #line default
             #line hidden
             this.Write("                case \"");
             
-            #line 104 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 107 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(row.Key));
             
             #line default
             #line hidden
             this.Write("\":\r\n");
             
-            #line 105 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
-     foreach (var value in row.Value.Value) { 
+            #line 108 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+     foreach (var value in row.Value) { 
             
             #line default
             #line hidden
             this.Write("                    self.SetStringByToken(\"");
             
-            #line 106 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
-            this.Write(this.ToStringHelper.ToStringWithCulture(row.Value.Key));
+            #line 109 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            this.Write(this.ToStringHelper.ToStringWithCulture(value.Key));
             
             #line default
             #line hidden
             this.Write("\", \"");
             
-            #line 106 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
-            this.Write(this.ToStringHelper.ToStringWithCulture(value));
+            #line 109 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            this.Write(this.ToStringHelper.ToStringWithCulture(value.Value));
             
             #line default
             #line hidden
             this.Write("\");\r\n");
             
-            #line 107 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 110 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
      } 
             
             #line default
             #line hidden
             this.Write("                    break;\r\n");
             
-            #line 109 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 112 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
  } 
             
             #line default
             #line hidden
             this.Write("                default:\r\n");
             
-            #line 111 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 114 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
  foreach (var row in defaultTokens) { 
             
             #line default
             #line hidden
             this.Write("                    self.SetStringByToken(\"");
             
-            #line 112 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 115 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(row.Key));
             
             #line default
             #line hidden
             this.Write("\", \"");
             
-            #line 112 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 115 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(row.Value));
             
             #line default
             #line hidden
-            this.Write("\");\r\n                    break;\r\n");
+            this.Write("\");\r\n");
             
-            #line 114 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 116 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
  } 
             
             #line default
             #line hidden
-            this.Write(@"            }
+            this.Write(@"                    break;
+            }
         }
 
         private static void Nothing(Action<SkinDef> orig, SkinDef self)
@@ -338,47 +342,47 @@ foreach (var skin in ReorderedSkins) {
 
 ");
             
-            #line 130 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 133 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
  foreach (var skin in ReorderedSkins) { 
             
             #line default
             #line hidden
             this.Write("            Add");
             
-            #line 131 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 134 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(skin.bodyName.ToUpperCamelCase()));
             
             #line default
             #line hidden
             
-            #line 131 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 134 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(skin.name.ToUpperCamelCase()));
             
             #line default
             #line hidden
             this.Write("Skin();\r\n");
             
-            #line 132 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 135 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
  } 
             
             #line default
             #line hidden
             this.Write("\r\n            hook.Undo();\r\n\r\n            AfterBodyCatalogInit();\r\n        }\r\n");
             
-            #line 138 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 141 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
  foreach (var skin in ReorderedSkins) { 
             
             #line default
             #line hidden
             this.Write("\r\n        static partial void ");
             
-            #line 140 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 143 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(skin.bodyName.ToUpperCamelCase()));
             
             #line default
             #line hidden
             
-            #line 140 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 143 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(skin.name.ToUpperCamelCase()));
             
             #line default
@@ -386,48 +390,48 @@ foreach (var skin in ReorderedSkins) {
             this.Write("SkinAdded(SkinDef skinDef, GameObject bodyPrefab);\r\n\r\n        private static void" +
                     " Add");
             
-            #line 142 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 145 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(skin.bodyName.ToUpperCamelCase()));
             
             #line default
             #line hidden
             
-            #line 142 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 145 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(skin.name.ToUpperCamelCase()));
             
             #line default
             #line hidden
             this.Write("Skin()\r\n        {\r\n");
             
-            #line 144 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 147 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
  if (!string.IsNullOrWhiteSpace(skin.modDependency.value) && skin.modDependency.type == DependencyType.SoftDependency) { 
             
             #line default
             #line hidden
             this.Write("            if (!BepInEx.Bootstrap.Chainloader.PluginInfos.ContainsKey(\"");
             
-            #line 145 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 148 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(skin.modDependency.value));
             
             #line default
             #line hidden
             this.Write("\"))\r\n            {\r\n                return;\r\n            }\r\n");
             
-            #line 149 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 152 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
  } 
             
             #line default
             #line hidden
             this.Write("            var bodyName = \"");
             
-            #line 150 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 153 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(skin.bodyName));
             
             #line default
             #line hidden
             this.Write("\";\r\n            var skinName = \"");
             
-            #line 151 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 154 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(skin.name));
             
             #line default
@@ -442,7 +446,7 @@ foreach (var skin in ReorderedSkins) {
 
 ");
             
-            #line 159 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 162 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
  switch (skin.renderersSource)
 {
     case RenderersSource.AllRendererComponents: 
@@ -451,7 +455,7 @@ foreach (var skin in ReorderedSkins) {
             #line hidden
             this.Write("                var renderers = mdl.GetComponentsInChildren<Renderer>(true);\r\n");
             
-            #line 163 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 166 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
       break;
     case RenderersSource.BaseRendererInfos: 
             
@@ -461,7 +465,7 @@ foreach (var skin in ReorderedSkins) {
                     "         var renderers = characterModel.baseRendererInfos.Select(info => info.re" +
                     "nderer).ToArray();\r\n");
             
-            #line 167 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 170 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
       break;
 } 
             
@@ -469,7 +473,7 @@ foreach (var skin in ReorderedSkins) {
             #line hidden
             this.Write("\r\n                var skin = ScriptableObject.CreateInstance<SkinDef>();\r\n");
             
-            #line 171 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 174 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
  if (!skin.icon.createFromColors) {
         if (skin.icon.sprite) { 
             
@@ -477,21 +481,21 @@ foreach (var skin in ReorderedSkins) {
             #line hidden
             this.Write("                skin.icon = assetBundle.LoadAsset<Sprite>(@\"");
             
-            #line 173 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 176 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(AssetsInfo.iconPaths[skin.icon.sprite]));
             
             #line default
             #line hidden
             this.Write("\");\r\n");
             
-            #line 174 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 177 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
       } else { 
             
             #line default
             #line hidden
             this.Write("                skin.icon = null;\r\n");
             
-            #line 176 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 179 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
       } 
     } else { 
             
@@ -499,42 +503,42 @@ foreach (var skin in ReorderedSkins) {
             #line hidden
             this.Write("                skin.icon = assetBundle.LoadAsset<Sprite>(@\"");
             
-            #line 178 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 181 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(AssetsInfo.iconFromColorPaths[skin.icon.colors]));
             
             #line default
             #line hidden
             this.Write("\");\r\n");
             
-            #line 179 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 182 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
  } 
             
             #line default
             #line hidden
             this.Write("                skin.name = skinName;\r\n                skin.nameToken = \"");
             
-            #line 181 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 184 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(skin.CreateNameToken(SkinModInfo.author)));
             
             #line default
             #line hidden
             this.Write("\";\r\n                skin.rootObject = mdl;\r\n");
             
-            #line 183 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 186 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
  if (skin.baseSkins.Count == 0) { 
             
             #line default
             #line hidden
             this.Write("                skin.baseSkins = Array.Empty<SkinDef>();\r\n");
             
-            #line 185 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 188 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
  } else { 
             
             #line default
             #line hidden
             this.Write("                skin.baseSkins = new SkinDef[] \r\n                { \r\n");
             
-            #line 188 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 191 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
  foreach (var reference in skin.baseSkins) { 
     if (reference.accessType == AccessType.ByIndex) { 
             
@@ -542,28 +546,28 @@ foreach (var skin in ReorderedSkins) {
             #line hidden
             this.Write("                    skinController.skins[");
             
-            #line 190 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 193 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(reference.index));
             
             #line default
             #line hidden
             this.Write("],\r\n");
             
-            #line 191 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 194 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
  } else { 
             
             #line default
             #line hidden
             this.Write("                    skinController.skins.First(s => s.Name == \"");
             
-            #line 192 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 195 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(reference.name));
             
             #line default
             #line hidden
             this.Write("\")\r\n");
             
-            #line 193 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 196 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
  } 
 } 
             
@@ -571,7 +575,7 @@ foreach (var skin in ReorderedSkins) {
             #line hidden
             this.Write("                };\r\n");
             
-            #line 196 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 199 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
  } 
 if (string.IsNullOrWhiteSpace(skin.unlockableName)) { 
             
@@ -579,7 +583,7 @@ if (string.IsNullOrWhiteSpace(skin.unlockableName)) {
             #line hidden
             this.Write("                skin.unlockableDef = null;\r\n");
             
-            #line 199 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 202 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
  } else { 
             
             #line default
@@ -587,14 +591,14 @@ if (string.IsNullOrWhiteSpace(skin.unlockableName)) {
             this.Write("                skin.unlockableDef = ContentManager.UnlockableDef.FirstOrDefault(" +
                     "def => def.cachedName == \"");
             
-            #line 200 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 203 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(skin.unlockableName));
             
             #line default
             #line hidden
             this.Write("\");\r\n");
             
-            #line 201 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 204 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
  }
 if (skin.gameObjectActivations.Count == 0) { 
             
@@ -603,7 +607,7 @@ if (skin.gameObjectActivations.Count == 0) {
             this.Write("                skin.gameObjectActivations = Array.Empty<SkinDef.GameObjectActiva" +
                     "tion>();\r\n");
             
-            #line 204 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 207 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
  } else { 
             
             #line default
@@ -611,7 +615,7 @@ if (skin.gameObjectActivations.Count == 0) {
             this.Write("                skin.gameObjectActivations = new SkinDef.GameObjectActivation[]\r\n" +
                     "                {\r\n");
             
-            #line 207 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 210 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
  foreach (var activation in skin.gameObjectActivations) { 
             
             #line default
@@ -619,35 +623,35 @@ if (skin.gameObjectActivations.Count == 0) {
             this.Write("                    new SkinDef.GameObjectActivation\r\n                    {\r\n    " +
                     "                    gameObject = renderers[");
             
-            #line 210 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 213 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(activation.rendererIndex));
             
             #line default
             #line hidden
             this.Write("].gameObject,\r\n                        shouldActivate = ");
             
-            #line 211 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 214 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
  if (activation.shouldActivate) 
             
             #line default
             #line hidden
             this.Write("true\r\n");
             
-            #line 212 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 215 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
  else 
             
             #line default
             #line hidden
             this.Write("false\r\n                    },\r\n");
             
-            #line 214 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 217 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
  } 
             
             #line default
             #line hidden
             this.Write("                };\r\n");
             
-            #line 216 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 219 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
  } 
 if (skin.rendererInfos.Count == 0) { 
             
@@ -656,7 +660,7 @@ if (skin.rendererInfos.Count == 0) {
             this.Write("                skin.rendererInfos = Array.Empty<CharacterModel.RendererInfo>();\r" +
                     "\n");
             
-            #line 219 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 222 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
  } else { 
             
             #line default
@@ -664,35 +668,35 @@ if (skin.rendererInfos.Count == 0) {
             this.Write("                skin.rendererInfos = new CharacterModel.RendererInfo[]\r\n         " +
                     "       {\r\n");
             
-            #line 222 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 225 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
  foreach (var rendererInfo in skin.rendererInfos) { 
             
             #line default
             #line hidden
             this.Write("                    new CharacterModel.RendererInfo\r\n                    {\r\n");
             
-            #line 225 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 228 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
  if (rendererInfo.defaultMaterial == null) { 
             
             #line default
             #line hidden
             this.Write("                        defaultMaterial = null,\r\n");
             
-            #line 227 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 230 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
  } else { 
             
             #line default
             #line hidden
             this.Write("                        defaultMaterial = assetBundle.LoadAsset<Material>(@\"");
             
-            #line 228 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 231 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(AssetsInfo.materialPaths[rendererInfo.defaultMaterial]));
             
             #line default
             #line hidden
             this.Write("\"),\r\n");
             
-            #line 229 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 232 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
  } 
             
             #line default
@@ -700,70 +704,70 @@ if (skin.rendererInfos.Count == 0) {
             this.Write("                        defaultShadowCastingMode = UnityEngine.Rendering.ShadowCa" +
                     "stingMode.");
             
-            #line 230 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 233 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(Enum.GetName(typeof(ShadowCastingMode), rendererInfo.defaultShadowCastingMode)));
             
             #line default
             #line hidden
             this.Write(",\r\n                        ignoreOverlays = ");
             
-            #line 231 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 234 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
  if (rendererInfo.ignoreOverlays) 
             
             #line default
             #line hidden
             this.Write("true,\r\n");
             
-            #line 232 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 235 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
  else 
             
             #line default
             #line hidden
             this.Write("false,\r\n");
             
-            #line 233 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 236 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
  if (rendererInfo.rendererReference.accessType == AccessType.ByIndex) { 
             
             #line default
             #line hidden
             this.Write("                        renderer = renderers[");
             
-            #line 234 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 237 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(rendererInfo.rendererReference.index));
             
             #line default
             #line hidden
             this.Write("]\r\n");
             
-            #line 235 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 238 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
  } else { 
             
             #line default
             #line hidden
             this.Write("                        renderer = renderers.First(r => r.name == \"");
             
-            #line 236 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 239 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(rendererInfo.rendererReference.name));
             
             #line default
             #line hidden
             this.Write("\")\r\n");
             
-            #line 237 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 240 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
  } 
             
             #line default
             #line hidden
             this.Write("                    },\r\n");
             
-            #line 239 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 242 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
  } 
             
             #line default
             #line hidden
             this.Write("                };\r\n");
             
-            #line 241 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 244 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
  }
 if (skin.meshReplacements.Count == 0) { 
             
@@ -772,7 +776,7 @@ if (skin.meshReplacements.Count == 0) {
             this.Write("                skin.meshReplacements = Array.Empty<SkinDef.MeshReplacement>();\r\n" +
                     "");
             
-            #line 244 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 247 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
  } else { 
             
             #line default
@@ -780,35 +784,35 @@ if (skin.meshReplacements.Count == 0) {
             this.Write("                skin.meshReplacements = new SkinDef.MeshReplacement[]\r\n          " +
                     "      {\r\n");
             
-            #line 247 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 250 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
  foreach (var replacement in skin.meshReplacements) { 
             
             #line default
             #line hidden
             this.Write("                    new SkinDef.MeshReplacement\r\n                    {\r\n");
             
-            #line 250 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 253 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
  if (replacement.mesh == null) { 
             
             #line default
             #line hidden
             this.Write("                        mesh = null,\r\n");
             
-            #line 252 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 255 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
  } else { 
             
             #line default
             #line hidden
             this.Write("                        mesh = assetBundle.LoadAsset<Mesh>(@\"");
             
-            #line 253 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 256 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(AssetsInfo.meshPaths[replacement.mesh]));
             
             #line default
             #line hidden
             this.Write("\"),\r\n");
             
-            #line 254 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 257 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
  } 
 if (replacement.rendererReference.accessType == AccessType.ByIndex) { 
             
@@ -816,42 +820,42 @@ if (replacement.rendererReference.accessType == AccessType.ByIndex) {
             #line hidden
             this.Write("                        renderer = renderers[");
             
-            #line 256 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 259 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(replacement.rendererReference.index));
             
             #line default
             #line hidden
             this.Write("]\r\n");
             
-            #line 257 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 260 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
  } else { 
             
             #line default
             #line hidden
             this.Write("                        renderer = renderers.First(r => r.name == \"");
             
-            #line 258 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 261 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(replacement.rendererReference.name));
             
             #line default
             #line hidden
             this.Write("\")\r\n");
             
-            #line 259 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 262 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
  } 
             
             #line default
             #line hidden
             this.Write("                    },\r\n");
             
-            #line 261 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 264 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
  } 
             
             #line default
             #line hidden
             this.Write("                };\r\n");
             
-            #line 263 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 266 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
  }
 if (skin.minionSkinReplacements.Count == 0) { 
             
@@ -860,7 +864,7 @@ if (skin.minionSkinReplacements.Count == 0) {
             this.Write("                skin.minionSkinReplacements = Array.Empty<SkinDef.MinionSkinRepla" +
                     "cement>();\r\n");
             
-            #line 266 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 269 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
  } else { 
             
             #line default
@@ -868,7 +872,7 @@ if (skin.minionSkinReplacements.Count == 0) {
             this.Write("                skin.minionSkinReplacements = new SkinDef.MinionSkinReplacement[]" +
                     "\r\n                {\r\n");
             
-            #line 269 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 272 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
  foreach (var replacement in skin.minionSkinReplacements) {
     if (!replacement.findSkinByReference && replacement.skin == null) {
         continue;
@@ -879,14 +883,14 @@ if (skin.minionSkinReplacements.Count == 0) {
             this.Write("                    new SkinDef.MinionSkinReplacement\r\n                    {\r\n   " +
                     "                     minionBodyPrefab = BodyCatalog.FindBodyPrefab(@\"");
             
-            #line 275 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 278 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(replacement.bodyName));
             
             #line default
             #line hidden
             this.Write("\"),\r\n");
             
-            #line 276 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 279 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
  if (replacement.findSkinByReference) { 
     if (replacement.reference.accessType == AccessType.ByIndex) { 
             
@@ -895,21 +899,21 @@ if (skin.minionSkinReplacements.Count == 0) {
             this.Write("                        minionSkin = BodyCatalog.GetBodySkins(BodyCatalog.FindBod" +
                     "yIndex(@\"");
             
-            #line 278 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 281 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(replacement.bodyName));
             
             #line default
             #line hidden
             this.Write("\"))[");
             
-            #line 278 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 281 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(replacement.reference.index));
             
             #line default
             #line hidden
             this.Write("]\r\n");
             
-            #line 279 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 282 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
  } else { 
             
             #line default
@@ -917,21 +921,21 @@ if (skin.minionSkinReplacements.Count == 0) {
             this.Write("                        minionSkin = BodyCatalog.GetBodySkins(BodyCatalog.FindBod" +
                     "yIndex(@\"");
             
-            #line 280 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 283 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(replacement.bodyName));
             
             #line default
             #line hidden
             this.Write("\")).First(s => s.name == @\"");
             
-            #line 280 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 283 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(replacement.reference.name));
             
             #line default
             #line hidden
             this.Write("\")\r\n    ");
             
-            #line 281 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 284 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
  }
 } else { 
             
@@ -940,35 +944,35 @@ if (skin.minionSkinReplacements.Count == 0) {
             this.Write("                        minionSkin = BodyCatalog.GetBodySkins(BodyCatalog.FindBod" +
                     "yIndex(@\"");
             
-            #line 283 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 286 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(replacement.bodyName));
             
             #line default
             #line hidden
             this.Write("\")).First(s => s.name == @\"");
             
-            #line 283 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 286 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(replacement.skin.name));
             
             #line default
             #line hidden
             this.Write("\")\r\n");
             
-            #line 284 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 287 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
  } 
             
             #line default
             #line hidden
             this.Write("                    },\r\n");
             
-            #line 286 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 289 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
  } 
             
             #line default
             #line hidden
             this.Write("                };\r\n");
             
-            #line 288 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 291 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
  } 
 if (skin.projectileGhostReplacements.Count == 0) { 
             
@@ -977,7 +981,7 @@ if (skin.projectileGhostReplacements.Count == 0) {
             this.Write("                skin.projectileGhostReplacements = Array.Empty<SkinDef.Projectile" +
                     "GhostReplacement>();\r\n");
             
-            #line 291 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 294 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
  } else { 
             
             #line default
@@ -985,7 +989,7 @@ if (skin.projectileGhostReplacements.Count == 0) {
             this.Write("                skin.projectileGhostReplacements = new SkinDef.ProjectileGhostRep" +
                     "lacement[]\r\n                {\r\n");
             
-            #line 294 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 297 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
  foreach (var replacement in skin.projectileGhostReplacements) { 
             
             #line default
@@ -993,14 +997,14 @@ if (skin.projectileGhostReplacements.Count == 0) {
             this.Write("                    new SkinDef.ProjectileGhostReplacement\r\n                    {" +
                     "\r\n                        projectilePrefab = Resources.Load<GameObject>(@\"");
             
-            #line 297 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 300 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(replacement.projectilePath));
             
             #line default
             #line hidden
             this.Write("\"),\r\n");
             
-            #line 298 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 301 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
  if (replacement.useResourcesPath) { 
             
             #line default
@@ -1008,14 +1012,14 @@ if (skin.projectileGhostReplacements.Count == 0) {
             this.Write("                        projectileGhostReplacementPrefab = Resources.Load<GameObj" +
                     "ect>(@\"");
             
-            #line 299 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 302 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(replacement.projectileGhostPath));
             
             #line default
             #line hidden
             this.Write("\")\r\n");
             
-            #line 300 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 303 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
  } else { 
             
             #line default
@@ -1023,28 +1027,28 @@ if (skin.projectileGhostReplacements.Count == 0) {
             this.Write("                        projectileGhostReplacementPrefab = assetBundle.LoadAsset<" +
                     "GameObject>(@\"");
             
-            #line 301 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 304 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(AssetsInfo.gameObjectPaths[replacement.projectileGhost]));
             
             #line default
             #line hidden
             this.Write("\")\r\n");
             
-            #line 302 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 305 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
  } 
             
             #line default
             #line hidden
             this.Write("                    },\r\n");
             
-            #line 304 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 307 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
  } 
             
             #line default
             #line hidden
             this.Write("                };\r\n");
             
-            #line 306 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 309 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
  } 
             
             #line default
@@ -1056,13 +1060,13 @@ if (skin.projectileGhostReplacements.Count == 0) {
                 BodyCatalog.skins[(int)BodyCatalog.FindBodyIndex(bodyPrefab)] = skinController.skins;
                 ");
             
-            #line 312 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 315 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(skin.bodyName.ToUpperCamelCase()));
             
             #line default
             #line hidden
             
-            #line 312 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 315 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(skin.name.ToUpperCamelCase()));
             
             #line default
@@ -1077,7 +1081,7 @@ if (skin.projectileGhostReplacements.Count == 0) {
         }
 ");
             
-            #line 320 "C:\Users\Admin\Desktop\F\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            #line 323 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
  } 
             
             #line default
