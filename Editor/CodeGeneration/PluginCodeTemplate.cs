@@ -588,8 +588,8 @@ if (string.IsNullOrWhiteSpace(skin.unlockableName)) {
             
             #line default
             #line hidden
-            this.Write("                skin.unlockableDef = ContentManager.UnlockableDef.FirstOrDefault(" +
-                    "def => def.cachedName == \"");
+            this.Write("                skin.unlockableDef = ContentManager.unlockableDefs.FirstOrDefault" +
+                    "(def => def.cachedName == \"");
             
             #line 203 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(skin.unlockableName));

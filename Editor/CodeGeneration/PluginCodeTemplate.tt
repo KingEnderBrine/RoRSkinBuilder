@@ -200,7 +200,7 @@ foreach (var skin in ReorderedSkins) {
 if (string.IsNullOrWhiteSpace(skin.unlockableName)) { #>
                 skin.unlockableDef = null;
 <# } else { #>
-                skin.unlockableDef = ContentManager.UnlockableDef.FirstOrDefault(def => def.cachedName == "<#= skin.unlockableName #>");
+                skin.unlockableDef = ContentManager.unlockableDefs.FirstOrDefault(def => def.cachedName == "<#= skin.unlockableName #>");
 <# }
 if (skin.gameObjectActivations.Count == 0) { #>
                 skin.gameObjectActivations = Array.Empty<SkinDef.GameObjectActivation>();
