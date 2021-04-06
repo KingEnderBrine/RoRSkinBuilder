@@ -33,7 +33,7 @@ namespace <#= AssetsInfo.uccModName #>
     public partial class <#= AssetsInfo.uccModName #>Plugin : BaseUnityPlugin
     {
         internal static <#= AssetsInfo.uccModName #>Plugin Instance { get; private set; }
-        internal static ManualLogSource InstanceLogger { get; private set; }
+        internal static ManualLogSource InstanceLogger => Instance?.Logger;
         
         private static AssetBundle assetBundle;
 <# if (AssetsInfo.materialsWithRoRShader.Count != 0) { #>
