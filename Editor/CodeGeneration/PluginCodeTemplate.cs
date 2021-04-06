@@ -126,7 +126,7 @@ namespace ");
             #line default
             #line hidden
             this.Write("Plugin Instance { get; private set; }\r\n        internal static ManualLogSource In" +
-                    "stanceLogger { get; private set; }\r\n        \r\n        private static AssetBundle" +
+                    "stanceLogger => Instance?.Logger;\r\n        \r\n        private static AssetBundle" +
                     " assetBundle;\r\n");
             
             #line 39 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
