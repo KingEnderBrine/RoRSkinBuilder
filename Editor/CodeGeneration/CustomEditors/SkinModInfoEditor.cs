@@ -20,23 +20,19 @@ namespace RoRSkinBuilder.CustomEditors
             {
                 Build(serializedObject.targetObject as SkinModInfo);
             }
-            if (GUILayout.Button("Build (Don't regenerate code)"))
-            {
-                Build(serializedObject.targetObject as SkinModInfo, false);
-            }
             if (GUILayout.Button("Import skins from RyanSkinAPI"))
             {
                 ImportSkinApiSkins(serializedObject.targetObject as SkinModInfo);
             }
         }
 
-        private static void Build(SkinModInfo skinModInfo, bool regenerateCode = true)
+        private static void Build(SkinModInfo skinModInfo)
         {
             var assetInfo = new AssetsInfo(skinModInfo);
-            assetInfo.CreateNecessaryAssetsAndFillPaths();
+            assetInfo.CreateNecessaryAssetsAndFillPaths(skinModInfo.regenerateAssemblyDefinition);
 
             var path = Path.Combine(assetInfo.modFolder, assetInfo.uccModName + "Plugin.cs");
-            if (regenerateCode)
+            if (skinModInfo.regenerateCode)
             {
                 var pluginCode = new PluginCodeTemplate(skinModInfo, assetInfo);
                 File.WriteAllText(path, pluginCode.TransformText());

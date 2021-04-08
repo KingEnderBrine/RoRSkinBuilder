@@ -31,13 +31,13 @@ namespace RoRSkinBuilder.SkinAPI
 
             Directory.CreateDirectory(importPath);
 
-            foreach (var skinDirectory in Directory.GetDirectories(path))
+            var importedSkins = false;
+
+            foreach (var skinDirectory in GatherDirectories(path))
             {
+                importedSkins = true;
+
                 var skinConfigPath = Path.Combine(skinDirectory, "Skin.cfg");
-                if (!File.Exists(skinConfigPath))
-                {
-                    continue;
-                }
 
                 var skinConfig = BepInExConfigReader.ReadConfig<SkinConfig>(skinConfigPath);
 
@@ -162,6 +162,12 @@ namespace RoRSkinBuilder.SkinAPI
                 skins.Add(skinDefinition);
             }
 
+            if (!importedSkins)
+            {
+                EditorUtility.DisplayDialog("RyanSkinAPI import", "Could not find any skins", "Ok");
+                return;
+            }
+
             foreach (var pendingSkin in pendingMinionSkins)
             {
                 var ownerSkin = skins.FirstOrDefault(el => el.bodyName == pendingSkin.Key.MinionReplacementForBody && el.nameTokenLocalizations[0].value == pendingSkin.Key.MinionReplacementForSkin);
@@ -186,6 +192,22 @@ namespace RoRSkinBuilder.SkinAPI
                 skinModInfo.skins.Add(skin);
             }
             AssetDatabase.SaveAssets();
+        }
+
+        private IEnumerable<string> GatherDirectories(string path)
+        {
+            foreach (var directory in Directory.GetDirectories(path))
+            {
+                if (File.Exists(Path.Combine(directory, "Skin.cfg")))
+                {
+                    yield return directory;
+                    continue;
+                }
+                foreach (var gatheredDirectory in GatherDirectories(directory))
+                {
+                    yield return gatheredDirectory;
+                }
+            }
         }
     }
 }

@@ -8,6 +8,8 @@ namespace RoRSkinBuilder.Data
     {
         [Tooltip("Fill this if skin depends on another mod")]
         public Dependency modDependency;
+        [Tooltip("Should config entry that will allow enable/disable skin be generated")]
+        public bool generateEnableConfig;
         [Tooltip("The name of body prefab e.g. 'CommandoBody', 'MageBody'")]
         public string bodyName;
         [Tooltip("The name of your skin in different languages")]

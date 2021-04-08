@@ -16,6 +16,7 @@ using UnityEngine;
 using System.Security;
 using System.Security.Permissions;
 using MonoMod.RuntimeDetour;
+using MonoMod.RuntimeDetour.HookGen;
 
 #pragma warning disable CS0618 // Type or member is obsolete
 [module: UnverifiableCode]
@@ -49,7 +50,7 @@ namespace <#= AssetsInfo.uccModName #>
             }
 
             BodyCatalog.availability.CallWhenAvailable(BodyCatalogInit);
-            new Hook(typeof(Language).GetMethod(nameof(Language.LoadStrings)), (Action<Action<Language>, Language>)LanguageLoadStrings).Apply();
+            HookEndpointManager.Add(typeof(Language).GetMethod(nameof(Language.LoadStrings)), (Action<Action<Language>, Language>)LanguageLoadStrings);
 
             ReplaceShaders();
 
@@ -101,21 +102,22 @@ foreach (var skin in ReorderedSkins) {
         tokens[nameToken] = localization.value;
     } 
 } #>
+<# foreach (var row in defaultTokens) { #>
+            self.SetStringByToken("<#= row.Key #>", "<#= row.Value #>");
+<# } #>
+
+<# if (tokensByLanguage.Count > 0) { #>
             switch(self.name.ToLower())
             {
-<# foreach (var row in tokensByLanguage) { #>
+<#     foreach (var row in tokensByLanguage) { #>
                 case "<#= row.Key #>":
-<#     foreach (var value in row.Value) { #>
+<#         foreach (var value in row.Value) { #>
                     self.SetStringByToken("<#= value.Key #>", "<#= value.Value #>");
+<#         } #>
+                    break;
 <#     } #>
-                    break;
-<# } #>
-                default:
-<# foreach (var row in defaultTokens) { #>
-                    self.SetStringByToken("<#= row.Key #>", "<#= row.Value #>");
-<# } #>
-                    break;
             }
+<# } #>
         }
 
         private static void Nothing(Action<SkinDef> orig, SkinDef self)
@@ -127,14 +129,14 @@ foreach (var skin in ReorderedSkins) {
         {
             BeforeBodyCatalogInit();
 
-            var hook = new Hook(typeof(SkinDef).GetMethod(nameof(SkinDef.Awake), BindingFlags.NonPublic | BindingFlags.Instance), (Action<Action<SkinDef>, SkinDef>)Nothing);
-            hook.Apply();
+            var awake = typeof(SkinDef).GetMethod(nameof(SkinDef.Awake), BindingFlags.NonPublic | BindingFlags.Instance);
+            HookEndpointManager.Add(awake, (Action<Action<SkinDef>, SkinDef>)Nothing);
 
 <# foreach (var skin in ReorderedSkins) { #>
             Add<#= skin.bodyName.ToUpperCamelCase() #><#= skin.name.ToUpperCamelCase() #>Skin();
 <# } #>
-
-            hook.Undo();
+            
+            HookEndpointManager.Remove(awake, (Action<Action<SkinDef>, SkinDef>)Nothing);
 
             AfterBodyCatalogInit();
         }
@@ -146,6 +148,12 @@ foreach (var skin in ReorderedSkins) {
         {
 <# if (!string.IsNullOrWhiteSpace(skin.modDependency.value) && skin.modDependency.type == DependencyType.SoftDependency) { #>
             if (!BepInEx.Bootstrap.Chainloader.PluginInfos.ContainsKey("<#= skin.modDependency.value #>"))
+            {
+                return;
+            }
+<# } #>
+<# if (skin.generateEnableConfig) { #>
+            if (!Instance.Config.Bind("<#= skin.name.ToUpperCamelCase() #>", "Enabled", true).Value)
             {
                 return;
             }

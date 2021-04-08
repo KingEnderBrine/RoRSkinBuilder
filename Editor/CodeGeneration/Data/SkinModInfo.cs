@@ -16,5 +16,10 @@ namespace RoRSkinBuilder.Data
         public List<SkinDefinition> skins;
         [Tooltip("Additional resources which need to be added to the asset bundle")]
         public List<UnityEngine.Object> additionalResources;
+        [Header("Build")]
+        [Tooltip("Should code be regenerated on build")]
+        public bool regenerateCode = true;
+        [Tooltip("Should AssemblyDefinition be regenerated on build")]
+        public bool regenerateAssemblyDefinition = true;
     }
 }

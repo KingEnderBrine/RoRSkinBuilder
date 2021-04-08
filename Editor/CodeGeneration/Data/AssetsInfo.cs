@@ -29,12 +29,16 @@ namespace RoRSkinBuilder.Data
             modFolder = Path.Combine("Assets", "SkinMods", uccModName);
         }
 
-        public void CreateNecessaryAssetsAndFillPaths()
+        public void CreateNecessaryAssetsAndFillPaths(bool regenerateAssemblyDefinition)
         {
             var fullModFolderPath = Path.Combine(Environment.CurrentDirectory, modFolder);
             Directory.CreateDirectory(fullModFolderPath);
 
-            File.WriteAllText(Path.Combine(fullModFolderPath, uccModName + ".asmdef"), defaultAssemblyDefinition.Replace("ASSEMBLY_DEFINITION_NAME", uccModName));
+            var assemblyDefinitionPath = Path.Combine(fullModFolderPath, uccModName + ".asmdef");
+            if (!File.Exists(assemblyDefinitionPath) || regenerateAssemblyDefinition)
+            {
+                File.WriteAllText(assemblyDefinitionPath, defaultAssemblyDefinition.Replace("ASSEMBLY_DEFINITION_NAME", uccModName));
+            }
 
             AssetDatabase.Refresh();
 
