@@ -12,6 +12,10 @@ namespace RoRSkinBuilder.CustomEditors
         private const int propertyHeigh = 16;
         private static readonly Dictionary<Type, DrawerInfo> drawerInfos = new Dictionary<Type, DrawerInfo>();
 
+        protected bool canBeHidden = true;
+        protected bool indent = true;
+        protected bool showLabel = true;
+
         private readonly DrawerInfo drawerInfo;
         public HideablePropertyDrawer()
         {
@@ -36,7 +40,7 @@ namespace RoRSkinBuilder.CustomEditors
         {
             var isExpandedProperty = property.FindPropertyRelative("isExpanded");
 
-            return isExpandedProperty.boolValue ? drawerInfo.GetVisiblePropertiesHeight(property) : propertyHeigh;
+            return isExpandedProperty.boolValue ? drawerInfo.GetVisiblePropertiesHeight(property) - (showLabel ? 0 : propertyHeigh) : propertyHeigh;
         }
 
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
@@ -45,19 +49,37 @@ namespace RoRSkinBuilder.CustomEditors
         
             EditorGUI.BeginProperty(position, label, property);
             property.isExpanded = false;
-            isExpandedProperty.boolValue = EditorGUI.Foldout(new Rect(position.x, position.y, position.width, propertyHeigh), isExpandedProperty.boolValue, label, true);
-        
+            if (canBeHidden)
+            {
+                isExpandedProperty.boolValue = !showLabel || EditorGUI.Foldout(new Rect(position.x, position.y, position.width, propertyHeigh), isExpandedProperty.boolValue, label, true);
+            }
+            else if (showLabel)
+            {
+                EditorGUI.LabelField(new Rect(position.x, position.y, position.width, propertyHeigh), label);
+                isExpandedProperty.boolValue = true;
+            }
+
             if (isExpandedProperty.boolValue)
             {
-                EditorGUI.indentLevel++;
-                var y = position.y + propertyHeigh;
+                var y = position.y;
+                if (showLabel)
+                {
+                    y += propertyHeigh;
+                }
+                if (indent)
+                {
+                    EditorGUI.indentLevel++;
+                }
                 foreach (var childProperty in drawerInfo.GetVisibleProperties(property))
                 {
                     var height = EditorGUI.GetPropertyHeight(childProperty);
                     EditorGUI.PropertyField(new Rect(position.x, y, position.width, height), childProperty, true);
                     y += height;
                 }
-                EditorGUI.indentLevel--;
+                if (indent)
+                {
+                    EditorGUI.indentLevel--;
+                }
             }
             EditorGUI.EndProperty();
         }

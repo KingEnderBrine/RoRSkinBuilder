@@ -152,8 +152,8 @@ foreach (var skin in ReorderedSkins) {
                 return;
             }
 <# } #>
-<# if (skin.generateEnableConfig) { #>
-            if (!Instance.Config.Bind("<#= skin.name.ToUpperCamelCase() #>", "Enabled", true).Value)
+<# if (skin.config.generateEnableConfig) { #>
+            if (!Instance.Config.Bind("<#= skin.name.ToUpperCamelCase() #>", "Enabled", <#= skin.config.enableConfigDefaultValue ? "true" : "false" #>).Value)
             {
                 return;
             }

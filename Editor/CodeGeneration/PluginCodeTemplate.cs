@@ -437,7 +437,7 @@ foreach (var skin in ReorderedSkins) {
             #line hidden
             
             #line 155 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
- if (skin.generateEnableConfig) { 
+ if (skin.config.generateEnableConfig) { 
             
             #line default
             #line hidden
@@ -448,8 +448,14 @@ foreach (var skin in ReorderedSkins) {
             
             #line default
             #line hidden
-            this.Write("\", \"Enabled\", true).Value)\r\n            {\r\n                return;\r\n            }" +
-                    "\r\n");
+            this.Write("\", \"Enabled\", ");
+            
+            #line 156 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
+            this.Write(this.ToStringHelper.ToStringWithCulture(skin.config.enableConfigDefaultValue ? "true" : "false"));
+            
+            #line default
+            #line hidden
+            this.Write(").Value)\r\n            {\r\n                return;\r\n            }\r\n");
             
             #line 160 "D:\RoR2 Modding\RoRSkinModCreator\RoRSkinModCreator\CodeGeneration\PluginCodeTemplate.tt"
  } 
