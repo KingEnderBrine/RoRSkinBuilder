@@ -40,7 +40,7 @@ namespace RoRSkinBuilder.CustomEditors
         {
             var isExpandedProperty = property.FindPropertyRelative("isExpanded");
 
-            return isExpandedProperty.boolValue ? drawerInfo.GetVisiblePropertiesHeight(property) - (showLabel ? 0 : propertyHeigh) : propertyHeigh;
+            return isExpandedProperty.boolValue ? drawerInfo.GetVisiblePropertiesHeight(property) - (showLabel || canBeHidden ? 0 : propertyHeigh) : propertyHeigh;
         }
 
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)

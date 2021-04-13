@@ -18,8 +18,17 @@ namespace RoRSkinBuilder.CustomEditors
             this.values = values.Select(el => el.ToString()).ToArray();
         }
 
+        public ShowWhenAttribute(bool show)
+        {
+            inverse = !show;
+        }
+
         public bool IsVisible(SerializedProperty rootProperty)
         {
+            if (string.IsNullOrWhiteSpace(propertyName))
+            {
+                return !inverse;
+            }
             var conditionProperty = rootProperty.FindPropertyRelative(propertyName);
             
             return inverse ^ values.Any(el => el == PropertyAsString(conditionProperty));
