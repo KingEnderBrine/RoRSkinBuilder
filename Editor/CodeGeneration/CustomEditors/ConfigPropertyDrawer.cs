@@ -9,11 +9,8 @@ namespace RoRSkinBuilder.CustomEditors
     [CustomPropertyDrawer(typeof(ConfigInfo))]
     public class ConfigPropertyDrawer : HideablePropertyDrawer<ConfigInfo>
     {
-        public ConfigPropertyDrawer()
-        {
-            canBeHidden = false;
-            showLabel = false;
-            indent = false;
-        }
+        protected override bool CanBeHidden => false;
+        protected override bool ShowLabel => false;
+        protected override bool Indent => false;
     }
 }

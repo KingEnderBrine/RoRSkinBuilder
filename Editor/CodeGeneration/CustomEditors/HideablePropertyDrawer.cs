@@ -12,9 +12,9 @@ namespace RoRSkinBuilder.CustomEditors
         private const int propertyHeigh = 16;
         private static readonly Dictionary<Type, DrawerInfo> drawerInfos = new Dictionary<Type, DrawerInfo>();
 
-        protected bool canBeHidden = true;
-        protected bool indent = true;
-        protected bool showLabel = true;
+        protected virtual bool CanBeHidden => true;
+        protected virtual bool Indent => true;
+        protected virtual bool ShowLabel => true;
 
         private readonly DrawerInfo drawerInfo;
         public HideablePropertyDrawer()
@@ -40,7 +40,7 @@ namespace RoRSkinBuilder.CustomEditors
         {
             var isExpandedProperty = property.FindPropertyRelative("isExpanded");
 
-            return isExpandedProperty.boolValue ? drawerInfo.GetVisiblePropertiesHeight(property) - (showLabel || canBeHidden ? 0 : propertyHeigh) : propertyHeigh;
+            return isExpandedProperty.boolValue ? drawerInfo.GetVisiblePropertiesHeight(property) - (ShowLabel || CanBeHidden ? 0 : propertyHeigh) : propertyHeigh;
         }
 
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
@@ -49,24 +49,28 @@ namespace RoRSkinBuilder.CustomEditors
         
             EditorGUI.BeginProperty(position, label, property);
             property.isExpanded = false;
-            if (canBeHidden)
+            if (CanBeHidden)
             {
-                isExpandedProperty.boolValue = !showLabel || EditorGUI.Foldout(new Rect(position.x, position.y, position.width, propertyHeigh), isExpandedProperty.boolValue, label, true);
+                isExpandedProperty.boolValue = !ShowLabel || EditorGUI.Foldout(new Rect(position.x, position.y, position.width, propertyHeigh), isExpandedProperty.boolValue, label, true);
             }
-            else if (showLabel)
+            else if (ShowLabel)
             {
                 EditorGUI.LabelField(new Rect(position.x, position.y, position.width, propertyHeigh), label);
+                isExpandedProperty.boolValue = true;
+            }
+            else
+            {
                 isExpandedProperty.boolValue = true;
             }
 
             if (isExpandedProperty.boolValue)
             {
                 var y = position.y;
-                if (showLabel)
+                if (ShowLabel)
                 {
                     y += propertyHeigh;
                 }
-                if (indent)
+                if (Indent)
                 {
                     EditorGUI.indentLevel++;
                 }
@@ -76,7 +80,7 @@ namespace RoRSkinBuilder.CustomEditors
                     EditorGUI.PropertyField(new Rect(position.x, y, position.width, height), childProperty, true);
                     y += height;
                 }
-                if (indent)
+                if (Indent)
                 {
                     EditorGUI.indentLevel--;
                 }
