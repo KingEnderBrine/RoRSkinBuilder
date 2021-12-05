@@ -352,6 +352,7 @@ if (replacement.rendererReference.accessType == AccessType.ByIndex) { #>
                 InstanceLogger.LogError(e.InnerException);
             }
         }
+<# } #>
 
         private static void TryCatchThrow(string message, Action action)
         {
@@ -364,7 +365,5 @@ if (replacement.rendererReference.accessType == AccessType.ByIndex) { #>
                 throw new Exception(message, e);
             }
         }
-<# } #>
     }
-
 }
