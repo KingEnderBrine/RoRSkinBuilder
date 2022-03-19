@@ -8,5 +8,10 @@ namespace RoRSkinBuilder
         {
             return Regex.Replace(Regex.Replace(str.Trim(), "\\b[a-z]", (m) => m.Value.ToUpper()), "[^\\w\\d]", "").Replace(" ", "");
         }
+
+        public static string StripSpaces(this string str)
+        {
+            return str.Replace(" ", "");
+        }
     }
 }

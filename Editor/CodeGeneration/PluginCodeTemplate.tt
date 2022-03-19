@@ -1,4 +1,4 @@
-﻿<#@ template language="C#" Inherits="PluginCodeTemplateBase" #>
+﻿<#@ template language="C#" Inherits="PluginCodeTemplateBase" linePragmas="false" #>
 <#@ assembly name="System.Core" #>
 <#@ import namespace="System.Linq" #>
 <#@ import namespace="System.Text" #>
@@ -13,14 +13,13 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Linq;
 using UnityEngine;
-using System.Security;
 using System.Security.Permissions;
-using MonoMod.RuntimeDetour;
 using MonoMod.RuntimeDetour.HookGen;
 using RoR2.ContentManagement;
+using UnityEngine.AddressableAssets;
+
 
 #pragma warning disable CS0618 // Type or member is obsolete
-[module: UnverifiableCode]
 [assembly: SecurityPermission(SecurityAction.RequestMinimum, SkipVerification = true)]
 #pragma warning restore CS0618 // Type or member is obsolete
 namespace <#= AssetsInfo.uccModName #>
@@ -29,7 +28,7 @@ namespace <#= AssetsInfo.uccModName #>
     [BepInDependency("<#= dependency.Key #>", BepInDependency.DependencyFlags.<#= Enum.GetName(typeof(DependencyType), dependency.Value) #>)]
 <# } #>
     
-    [BepInPlugin("com.<#= SkinModInfo.author #>.<#= AssetsInfo.uccModName #>","<#= SkinModInfo.modName #>","<#= SkinModInfo.version #>")]
+    [BepInPlugin("com.<#= SkinModInfo.author.StripSpaces() #>.<#= AssetsInfo.uccModName #>","<#= SkinModInfo.modName #>","<#= SkinModInfo.version #>")]
     public partial class <#= AssetsInfo.uccModName #>Plugin : BaseUnityPlugin
     {
         internal static <#= AssetsInfo.uccModName #>Plugin Instance { get; private set; }
@@ -39,10 +38,10 @@ namespace <#= AssetsInfo.uccModName #>
 <# if (AssetsInfo.materialsWithRoRShader.Count != 0) { #>
         private static readonly List<Material> materialsWithRoRShader = new List<Material>();
 <# } #>
-        private void Awake()
+        private void Start()
         {
             Instance = this;
-            BeforeAwake();
+            BeforeStart();
             using (var assetStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("<#= AssetsInfo.uccModName #>.<#= AssetsInfo.assetBundleName #>"))
             {
                 assetBundle = AssetBundle.LoadFromStream(assetStream);
@@ -53,27 +52,33 @@ namespace <#= AssetsInfo.uccModName #>
 
             ReplaceShaders();
 
-            AfterAwake();
+            AfterStart();
         }
 
-        partial void BeforeAwake();
-        partial void AfterAwake();
+        partial void BeforeStart();
+        partial void AfterStart();
         static partial void BeforeBodyCatalogInit();
         static partial void AfterBodyCatalogInit();
 
         private static void ReplaceShaders()
         {
-<# foreach (var material in AssetsInfo.materialsWithRoRShader) { #>
-            materialsWithRoRShader.Add(LoadMaterialWithReplacedShader(@"<#= AssetsInfo.materialPaths[material.Key] #>", @"<#= material.Value #>"));
+<# foreach (var row in AssetsInfo.materialsWithRoRShader) { #>
+            LoadMaterialsWithReplacedShader(@"<#= row.Key #>"
+<# foreach (var material in row.Value) { #>
+                ,@"<#= AssetsInfo.materialPaths[material] #>"
+<# } #>);
 <# } #>
         }
 
-        private static Material LoadMaterialWithReplacedShader(string materialPath, string shaderName)
+        private static void LoadMaterialsWithReplacedShader(string shaderPath, params string[] materialPaths)
         {
-            var material = assetBundle.LoadAsset<Material>(materialPath);
-            material.shader = Shader.Find(shaderName);
-
-            return material;
+            var shader = Addressables.LoadAssetAsync<Shader>(shaderPath).WaitForCompletion();
+            foreach (var materialPath in materialPaths)
+            {
+                var material = assetBundle.LoadAsset<Material>(materialPath);
+                material.shader = shader;
+                materialsWithRoRShader.Add(material);
+            }
         }
 
         private static void LanguageLoadStrings(Action<Language> orig, Language self)
@@ -208,8 +213,8 @@ foreach (var skin in ReorderedSkins) {
 <# } 
 } #>
                     };
-                });
 <# } #>
+                });
                 TryCatchThrow("Unlockable Name", () =>
                 {
 <# if (string.IsNullOrWhiteSpace(skin.unlockableName)) { #>
@@ -327,9 +332,9 @@ if (replacement.rendererReference.accessType == AccessType.ByIndex) { #>
 <# foreach (var replacement in skin.projectileGhostReplacements) { #>
                         new SkinDef.ProjectileGhostReplacement
                         {
-                            projectilePrefab = Resources.Load<GameObject>(@"<#= replacement.projectilePath #>"),
+                            projectilePrefab = Addressables.LoadAssetAsync<GameObject>(@"<#= replacement.projectilePath #>").WaitForCompletion(),
 <# if (replacement.useResourcesPath) { #>
-                            projectileGhostReplacementPrefab = Resources.Load<GameObject>(@"<#= replacement.projectileGhostPath #>")
+                            projectileGhostReplacementPrefab = Addressables.LoadAssetAsync<GameObject>(@"<#= replacement.projectileGhostPath #>".WaitForCompletion())
 <# } else { #>
                             projectileGhostReplacementPrefab = assetBundle.LoadAsset<GameObject>(@"<#= AssetsInfo.gameObjectPaths[replacement.projectileGhost] #>")
 <# } #>
