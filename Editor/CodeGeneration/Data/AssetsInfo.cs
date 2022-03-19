@@ -1,4 +1,5 @@
-﻿using System;
+﻿using RoRSkinBuilder.CodeGeneration;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
@@ -8,6 +9,11 @@ namespace RoRSkinBuilder.Data
 {
     public class AssetsInfo
     {
+        private static readonly Dictionary<string, string> shaderPaths = new Dictionary<string, string>()
+        {
+            ["Fake RoR/Hopoo Games/Deferred/Standard"] = "RoR2/Base/Shaders/HGStandard.shader",
+        };
+
         private readonly SkinModInfo skinModInfo;
         public readonly string uccModName;
         public readonly string assetBundleName;
@@ -18,7 +24,7 @@ namespace RoRSkinBuilder.Data
         public readonly Dictionary<Material, string> materialPaths = new Dictionary<Material, string>();
         public readonly Dictionary<Mesh, string> meshPaths = new Dictionary<Mesh, string>();
         public readonly Dictionary<GameObject, string> gameObjectPaths = new Dictionary<GameObject, string>();
-        public readonly Dictionary<Material, string> materialsWithRoRShader = new Dictionary<Material, string>();
+        public readonly Dictionary<string, HashSet<Material>> materialsWithRoRShader = new Dictionary<string, HashSet<Material>>();
 
         public AssetsInfo(SkinModInfo skinModInfo)
         {
@@ -84,9 +90,9 @@ namespace RoRSkinBuilder.Data
                         continue;
                     }
                     materialPaths[rendererInfo.defaultMaterial] = AssetDatabase.GetAssetPath(rendererInfo.defaultMaterial);
-                    if (rendererInfo.defaultMaterial.shader.name.StartsWith("Fake RoR/"))
+                    if (shaderPaths.TryGetValue(rendererInfo.defaultMaterial.shader.name, out var shaderPath))
                     {
-                        materialsWithRoRShader[rendererInfo.defaultMaterial] = rendererInfo.defaultMaterial.shader.name.Replace("Fake RoR/", "");
+                        materialsWithRoRShader.GetOrAdd(shaderPath, () => new HashSet<Material>()).Add(rendererInfo.defaultMaterial);
                     }
                 }
 
@@ -165,19 +171,24 @@ namespace RoRSkinBuilder.Data
 @"
 {
     ""name"": ""ASSEMBLY_DEFINITION_NAME"",
-    ""references"": [],
+    ""references"": [
+        ""Unity.Addressables"",
+        ""Unity.ResourceManager""
+    ],
     ""optionalUnityReferences"": [],
     ""includePlatforms"": [],
     ""excludePlatforms"": [],
     ""allowUnsafeCode"": false,
     ""overrideReferences"": true,
     ""precompiledReferences"": [
-        ""Assembly-CSharp.refstub.dll"",
+        ""RoR2-nstrip.dll"",
         ""BepInEx.dll"",
         ""MonoMod.RuntimeDetour.dll""
     ],
     ""autoReferenced"": false,
-    ""defineConstraints"": []
-    }";
+    ""defineConstraints"": [],
+    ""versionDefines"": [],
+    ""noEngineReferences"": false
+}";
     }
 }
