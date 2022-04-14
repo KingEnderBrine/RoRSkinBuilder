@@ -155,7 +155,7 @@ namespace RoRSkinBuilder.Data
                         assetNames = assetNames.ToArray()
                     }
                 },
-                BuildAssetBundleOptions.ChunkBasedCompression,
+                BuildAssetBundleOptions.None,
                 BuildTarget.StandaloneWindows);
 
             return manifest != null;
