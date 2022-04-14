@@ -3,6 +3,7 @@ using RoRSkinBuilder.SkinAPI;
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEditor.Compilation;
 using UnityEngine;
@@ -29,6 +30,12 @@ namespace RoRSkinBuilder.CustomEditors
         private static void Build(SkinModInfo skinModInfo)
         {
             var assetInfo = new AssetsInfo(skinModInfo);
+
+            if (!Validate(skinModInfo))
+            {
+                return;
+            }
+
             assetInfo.CreateNecessaryAssetsAndFillPaths(skinModInfo.regenerateAssemblyDefinition);
 
             var path = Path.Combine(assetInfo.modFolder, assetInfo.uccModName + "Plugin.cs");
@@ -81,6 +88,40 @@ namespace RoRSkinBuilder.CustomEditors
             }
 
             new SkinAPIImporter(path, skinModInfo).Import();
+        }
+
+        private static bool Validate(SkinModInfo skinModInfo)
+        {
+            if (string.IsNullOrWhiteSpace(skinModInfo.author))
+            {
+                EditorUtility.DisplayDialog("Error", "\"Author\" field is empty", "Ok");
+                return false;
+            }
+            if (string.IsNullOrWhiteSpace(skinModInfo.modName))
+            {
+                EditorUtility.DisplayDialog("Error", "\"Mod Name\" field is empty", "Ok");
+                return false;
+            }
+            if (!Regex.IsMatch(skinModInfo.version, @"\d+?\.\d+?\.\d+?"))
+            {
+                EditorUtility.DisplayDialog("Error", "\"Version\" field has invalid format. It should be X.X.X where X is a number", "Ok");
+                return false;
+            }
+
+            foreach (var skin in skinModInfo.skins)
+            {
+                if (!skin)
+                {
+                    continue;
+                }
+
+                if (string.IsNullOrWhiteSpace(skin.bodyName))
+                {
+                    EditorUtility.DisplayDialog("Error", $"\"Body Name\" field for a \"{skin.name}\" skin is empty", "Ok");
+                }
+            }
+
+            return true;
         }
     }
 }

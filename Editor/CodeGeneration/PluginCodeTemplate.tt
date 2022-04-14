@@ -41,7 +41,9 @@ namespace <#= AssetsInfo.uccModName #>
         private void Start()
         {
             Instance = this;
+
             BeforeStart();
+
             using (var assetStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("<#= AssetsInfo.uccModName #>.<#= AssetsInfo.assetBundleName #>"))
             {
                 assetBundle = AssetBundle.LoadFromStream(assetStream);
@@ -50,8 +52,10 @@ namespace <#= AssetsInfo.uccModName #>
             BodyCatalog.availability.CallWhenAvailable(BodyCatalogInit);
             HookEndpointManager.Add(typeof(Language).GetMethod(nameof(Language.LoadStrings)), (Action<Action<Language>, Language>)LanguageLoadStrings);
 
+<# if (AssetsInfo.materialsWithRoRShader.Count != 0) { #>
             ReplaceShaders();
 
+<# } #>
             AfterStart();
         }
 
@@ -60,13 +64,13 @@ namespace <#= AssetsInfo.uccModName #>
         static partial void BeforeBodyCatalogInit();
         static partial void AfterBodyCatalogInit();
 
+<# if (AssetsInfo.materialsWithRoRShader.Count != 0) { #>
         private static void ReplaceShaders()
         {
 <# foreach (var row in AssetsInfo.materialsWithRoRShader) { #>
             LoadMaterialsWithReplacedShader(@"<#= row.Key #>"
 <# foreach (var material in row.Value) { #>
-                ,@"<#= AssetsInfo.materialPaths[material] #>"
-<# } #>);
+                ,@"<#= AssetsInfo.materialPaths[material] #>"<# } #>);
 <# } #>
         }
 
@@ -80,6 +84,7 @@ namespace <#= AssetsInfo.uccModName #>
                 materialsWithRoRShader.Add(material);
             }
         }
+<# } #>
 
         private static void LanguageLoadStrings(Action<Language> orig, Language self)
         {
@@ -109,8 +114,8 @@ foreach (var skin in ReorderedSkins) {
 <# foreach (var row in defaultTokens) { #>
             self.SetStringByToken("<#= row.Key #>", "<#= row.Value #>");
 <# } #>
-
 <# if (tokensByLanguage.Count > 0) { #>
+
             switch(self.name.ToLower())
             {
 <#     foreach (var row in tokensByLanguage) { #>
@@ -157,7 +162,7 @@ foreach (var skin in ReorderedSkins) {
             }
 <# } #>
 <# if (skin.config.generateEnableConfig) { #>
-            if (!Instance.Config.Bind("<#= skin.name.ToUpperCamelCase() #>", "Enabled", <#= skin.config.enableConfigDefaultValue ? "true" : "false" #>).Value)
+            if (!Instance.Config.Bind("<#= skin.name.ToUpperCamelCase() #>", "Enabled", <#= skin.config.enableConfigDefaultValue.ToLiteral() #>).Value)
             {
                 return;
             }
@@ -167,9 +172,26 @@ foreach (var skin in ReorderedSkins) {
             try
             {
                 var bodyPrefab = BodyCatalog.FindBodyPrefab(bodyName);
+                if (!bodyPrefab)
+                {
+                    InstanceLogger.LogWarning($"Failed to add \"{skinName}\" skin because \"{bodyName}\" doesn't exist");
+                    return;
+                }
+
                 var modelLocator = bodyPrefab.GetComponent<ModelLocator>();
+                if (!modelLocator)
+                {
+                    InstanceLogger.LogWarning($"Failed to add \"{skinName}\" skin to \"{bodyName}\" because it doesn't have \"ModelLocator\" component");
+                    return;
+                }
+
                 var mdl = modelLocator.modelTransform.gameObject;
-                var skinController = mdl.GetComponent<ModelSkinController>();
+                var skinController = mdl ? mdl.GetComponent<ModelSkinController>() : null;
+                if (!skinController)
+                {
+                    InstanceLogger.LogWarning($"Failed to add \"{skinName}\" skin to \"{bodyName}\" because it doesn't have \"ModelSkinController\" component");
+                    return;
+                }
 
 <# switch (skin.renderersSource)
 {
@@ -178,6 +200,11 @@ foreach (var skin in ReorderedSkins) {
 <#      break;
     case RenderersSource.BaseRendererInfos: #>
                 var characterModel = mdl.GetComponent<CharacterModel>();
+                if (!characterModel)
+                {
+                    InstanceLogger.LogWarning($"Failed to add \"{skinName}\" skin to \"{bodyName}\" because it doesn't have \"CharacterModel\" component");
+                    return;
+                }
                 var renderers = characterModel.baseRendererInfos.Select(info => info.renderer).ToArray();
 <#      break;
 } #>
@@ -234,8 +261,7 @@ foreach (var skin in ReorderedSkins) {
                         new SkinDef.GameObjectActivation
                         {
                             gameObject = renderers[<#= activation.rendererIndex #>].gameObject,
-                            shouldActivate = <# if (activation.shouldActivate) #>true
-<# else #>false
+                            shouldActivate = <#= activation.shouldActivate.ToLiteral() #>
                         },
 <# } #>
                     };
@@ -257,8 +283,7 @@ foreach (var skin in ReorderedSkins) {
                             defaultMaterial = assetBundle.LoadAsset<Material>(@"<#= AssetsInfo.materialPaths[rendererInfo.defaultMaterial] #>"),
 <# } #>
                             defaultShadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.<#= Enum.GetName(typeof(ShadowCastingMode), rendererInfo.defaultShadowCastingMode) #>,
-                            ignoreOverlays = <# if (rendererInfo.ignoreOverlays) #>true,
-<# else #>false,
+                            ignoreOverlays = <#= rendererInfo.ignoreOverlays.ToLiteral() #>
 <# if (rendererInfo.rendererReference.accessType == AccessType.ByIndex) { #>
                             renderer = renderers[<#= rendererInfo.rendererReference.index #>]
 <# } else { #>
@@ -350,11 +375,16 @@ if (replacement.rendererReference.accessType == AccessType.ByIndex) { #>
                 BodyCatalog.skins[(int)BodyCatalog.FindBodyIndex(bodyPrefab)] = skinController.skins;
                 <#= skin.bodyName.ToUpperCamelCase() #><#= skin.name.ToUpperCamelCase() #>SkinAdded(skin, bodyPrefab);
             }
-            catch (Exception e)
+            catch (FieldException e)
             {
                 InstanceLogger.LogWarning($"Failed to add \"{skinName}\" skin to \"{bodyName}\"");
                 InstanceLogger.LogWarning($"Field causing issue: {e.Message}");
                 InstanceLogger.LogError(e.InnerException);
+            }
+            catch (Exception e)
+            {
+                InstanceLogger.LogWarning($"Failed to add \"{skinName}\" skin to \"{bodyName}\"");
+                InstanceLogger.LogError(e);
             }
         }
 <# } #>
@@ -367,8 +397,13 @@ if (replacement.rendererReference.accessType == AccessType.ByIndex) { #>
             }
             catch (Exception e)
             {
-                throw new Exception(message, e);
+                throw new FieldException(message, e);
             }
+        }
+
+        private class FieldException : Exception
+        {
+            public FieldException(string message, Exception innerException) : base(message, innerException) { }
         }
     }
 }

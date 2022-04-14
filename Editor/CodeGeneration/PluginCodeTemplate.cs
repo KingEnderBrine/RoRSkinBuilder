@@ -73,9 +73,9 @@ namespace ");
             this.Write("        private static readonly List<Material> materialsWithRoRShader = new List<" +
                     "Material>();\r\n");
  } 
-            this.Write("        private void Start()\r\n        {\r\n            Instance = this;\r\n          " +
-                    "  BeforeStart();\r\n            using (var assetStream = Assembly.GetExecutingAsse" +
-                    "mbly().GetManifestResourceStream(\"");
+            this.Write("        private void Start()\r\n        {\r\n            Instance = this;\r\n\r\n        " +
+                    "    BeforeStart();\r\n\r\n            using (var assetStream = Assembly.GetExecuting" +
+                    "Assembly().GetManifestResourceStream(\"");
             this.Write(this.ToStringHelper.ToStringWithCulture(AssetsInfo.uccModName));
             this.Write(".");
             this.Write(this.ToStringHelper.ToStringWithCulture(AssetsInfo.assetBundleName));
@@ -87,19 +87,15 @@ namespace ");
             BodyCatalog.availability.CallWhenAvailable(BodyCatalogInit);
             HookEndpointManager.Add(typeof(Language).GetMethod(nameof(Language.LoadStrings)), (Action<Action<Language>, Language>)LanguageLoadStrings);
 
-            ReplaceShaders();
-
-            AfterStart();
-        }
-
-        partial void BeforeStart();
-        partial void AfterStart();
-        static partial void BeforeBodyCatalogInit();
-        static partial void AfterBodyCatalogInit();
-
-        private static void ReplaceShaders()
-        {
 ");
+ if (AssetsInfo.materialsWithRoRShader.Count != 0) { 
+            this.Write("            ReplaceShaders();\r\n\r\n");
+ } 
+            this.Write("            AfterStart();\r\n        }\r\n\r\n        partial void BeforeStart();\r\n    " +
+                    "    partial void AfterStart();\r\n        static partial void BeforeBodyCatalogIni" +
+                    "t();\r\n        static partial void AfterBodyCatalogInit();\r\n\r\n");
+ if (AssetsInfo.materialsWithRoRShader.Count != 0) { 
+            this.Write("        private static void ReplaceShaders()\r\n        {\r\n");
  foreach (var row in AssetsInfo.materialsWithRoRShader) { 
             this.Write("            LoadMaterialsWithReplacedShader(@\"");
             this.Write(this.ToStringHelper.ToStringWithCulture(row.Key));
@@ -107,7 +103,7 @@ namespace ");
  foreach (var material in row.Value) { 
             this.Write("                ,@\"");
             this.Write(this.ToStringHelper.ToStringWithCulture(AssetsInfo.materialPaths[material]));
-            this.Write("\"\r\n");
+            this.Write("\"");
  } 
             this.Write(");\r\n");
  } 
@@ -123,12 +119,10 @@ namespace ");
                 materialsWithRoRShader.Add(material);
             }
         }
-
-        private static void LanguageLoadStrings(Action<Language> orig, Language self)
-        {
-            orig(self);
-
 ");
+ } 
+            this.Write("\r\n        private static void LanguageLoadStrings(Action<Language> orig, Language" +
+                    " self)\r\n        {\r\n            orig(self);\r\n\r\n");
  var tokensByLanguage = new Dictionary<string, Dictionary<string, string>>();
 var defaultTokens = new Dictionary<string, string>();
 
@@ -157,9 +151,8 @@ foreach (var skin in ReorderedSkins) {
             this.Write(this.ToStringHelper.ToStringWithCulture(row.Value));
             this.Write("\");\r\n");
  } 
-            this.Write("\r\n");
  if (tokensByLanguage.Count > 0) { 
-            this.Write("            switch(self.name.ToLower())\r\n            {\r\n");
+            this.Write("\r\n            switch(self.name.ToLower())\r\n            {\r\n");
      foreach (var row in tokensByLanguage) { 
             this.Write("                case \"");
             this.Write(this.ToStringHelper.ToStringWithCulture(row.Key));
@@ -216,7 +209,7 @@ foreach (var skin in ReorderedSkins) {
             this.Write("            if (!Instance.Config.Bind(\"");
             this.Write(this.ToStringHelper.ToStringWithCulture(skin.name.ToUpperCamelCase()));
             this.Write("\", \"Enabled\", ");
-            this.Write(this.ToStringHelper.ToStringWithCulture(skin.config.enableConfigDefaultValue ? "true" : "false"));
+            this.Write(this.ToStringHelper.ToStringWithCulture(skin.config.enableConfigDefaultValue.ToLiteral()));
             this.Write(").Value)\r\n            {\r\n                return;\r\n            }\r\n");
  } 
             this.Write("            var bodyName = \"");
@@ -227,9 +220,26 @@ foreach (var skin in ReorderedSkins) {
             try
             {
                 var bodyPrefab = BodyCatalog.FindBodyPrefab(bodyName);
+                if (!bodyPrefab)
+                {
+                    InstanceLogger.LogWarning($""Failed to add \""{skinName}\"" skin because \""{bodyName}\"" doesn't exist"");
+                    return;
+                }
+
                 var modelLocator = bodyPrefab.GetComponent<ModelLocator>();
+                if (!modelLocator)
+                {
+                    InstanceLogger.LogWarning($""Failed to add \""{skinName}\"" skin to \""{bodyName}\"" because it doesn't have \""ModelLocator\"" component"");
+                    return;
+                }
+
                 var mdl = modelLocator.modelTransform.gameObject;
-                var skinController = mdl.GetComponent<ModelSkinController>();
+                var skinController = mdl ? mdl.GetComponent<ModelSkinController>() : null;
+                if (!skinController)
+                {
+                    InstanceLogger.LogWarning($""Failed to add \""{skinName}\"" skin to \""{bodyName}\"" because it doesn't have \""ModelSkinController\"" component"");
+                    return;
+                }
 
 ");
  switch (skin.renderersSource)
@@ -238,9 +248,14 @@ foreach (var skin in ReorderedSkins) {
             this.Write("                var renderers = mdl.GetComponentsInChildren<Renderer>(true);\r\n");
       break;
     case RenderersSource.BaseRendererInfos: 
-            this.Write("                var characterModel = mdl.GetComponent<CharacterModel>();\r\n       " +
-                    "         var renderers = characterModel.baseRendererInfos.Select(info => info.re" +
-                    "nderer).ToArray();\r\n");
+            this.Write(@"                var characterModel = mdl.GetComponent<CharacterModel>();
+                if (!characterModel)
+                {
+                    InstanceLogger.LogWarning($""Failed to add \""{skinName}\"" skin to \""{bodyName}\"" because it doesn't have \""CharacterModel\"" component"");
+                    return;
+                }
+                var renderers = characterModel.baseRendererInfos.Select(info => info.renderer).ToArray();
+");
       break;
 } 
             this.Write("\r\n                var skin = ScriptableObject.CreateInstance<SkinDef>();\r\n       " +
@@ -303,10 +318,8 @@ foreach (var skin in ReorderedSkins) {
                     " {\r\n                            gameObject = renderers[");
             this.Write(this.ToStringHelper.ToStringWithCulture(activation.rendererIndex));
             this.Write("].gameObject,\r\n                            shouldActivate = ");
- if (activation.shouldActivate) 
-            this.Write("true\r\n");
- else 
-            this.Write("false\r\n                        },\r\n");
+            this.Write(this.ToStringHelper.ToStringWithCulture(activation.shouldActivate.ToLiteral()));
+            this.Write("\r\n                        },\r\n");
  } 
             this.Write("                    };\r\n");
  } 
@@ -332,10 +345,8 @@ foreach (var skin in ReorderedSkins) {
                     "owCastingMode.");
             this.Write(this.ToStringHelper.ToStringWithCulture(Enum.GetName(typeof(ShadowCastingMode), rendererInfo.defaultShadowCastingMode)));
             this.Write(",\r\n                            ignoreOverlays = ");
- if (rendererInfo.ignoreOverlays) 
-            this.Write("true,\r\n");
- else 
-            this.Write("false,\r\n");
+            this.Write(this.ToStringHelper.ToStringWithCulture(rendererInfo.ignoreOverlays.ToLiteral()));
+            this.Write("\r\n");
  if (rendererInfo.rendererReference.accessType == AccessType.ByIndex) { 
             this.Write("                            renderer = renderers[");
             this.Write(this.ToStringHelper.ToStringWithCulture(rendererInfo.rendererReference.index));
@@ -464,11 +475,16 @@ if (replacement.rendererReference.accessType == AccessType.ByIndex) {
             this.Write(this.ToStringHelper.ToStringWithCulture(skin.name.ToUpperCamelCase()));
             this.Write(@"SkinAdded(skin, bodyPrefab);
             }
-            catch (Exception e)
+            catch (FieldException e)
             {
                 InstanceLogger.LogWarning($""Failed to add \""{skinName}\"" skin to \""{bodyName}\"""");
                 InstanceLogger.LogWarning($""Field causing issue: {e.Message}"");
                 InstanceLogger.LogError(e.InnerException);
+            }
+            catch (Exception e)
+            {
+                InstanceLogger.LogWarning($""Failed to add \""{skinName}\"" skin to \""{bodyName}\"""");
+                InstanceLogger.LogError(e);
             }
         }
 ");
@@ -482,8 +498,13 @@ if (replacement.rendererReference.accessType == AccessType.ByIndex) {
             }
             catch (Exception e)
             {
-                throw new Exception(message, e);
+                throw new FieldException(message, e);
             }
+        }
+
+        private class FieldException : Exception
+        {
+            public FieldException(string message, Exception innerException) : base(message, innerException) { }
         }
     }
 }");

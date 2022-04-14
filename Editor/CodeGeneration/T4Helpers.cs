@@ -13,5 +13,10 @@ namespace RoRSkinBuilder
         {
             return str.Replace(" ", "");
         }
+
+        public static string ToLiteral(this bool value)
+        {
+            return value ? "true" : "false";
+        }
     }
 }
