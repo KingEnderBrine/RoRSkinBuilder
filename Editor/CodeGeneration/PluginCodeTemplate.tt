@@ -283,7 +283,7 @@ foreach (var skin in ReorderedSkins) {
                             defaultMaterial = assetBundle.LoadAsset<Material>(@"<#= AssetsInfo.materialPaths[rendererInfo.defaultMaterial] #>"),
 <# } #>
                             defaultShadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.<#= Enum.GetName(typeof(ShadowCastingMode), rendererInfo.defaultShadowCastingMode) #>,
-                            ignoreOverlays = <#= rendererInfo.ignoreOverlays.ToLiteral() #>
+                            ignoreOverlays = <#= rendererInfo.ignoreOverlays.ToLiteral() #>,
 <# if (rendererInfo.rendererReference.accessType == AccessType.ByIndex) { #>
                             renderer = renderers[<#= rendererInfo.rendererReference.index #>]
 <# } else { #>

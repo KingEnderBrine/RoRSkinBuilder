@@ -346,7 +346,7 @@ foreach (var skin in ReorderedSkins) {
             this.Write(this.ToStringHelper.ToStringWithCulture(Enum.GetName(typeof(ShadowCastingMode), rendererInfo.defaultShadowCastingMode)));
             this.Write(",\r\n                            ignoreOverlays = ");
             this.Write(this.ToStringHelper.ToStringWithCulture(rendererInfo.ignoreOverlays.ToLiteral()));
-            this.Write("\r\n");
+            this.Write(",\r\n");
  if (rendererInfo.rendererReference.accessType == AccessType.ByIndex) { 
             this.Write("                            renderer = renderers[");
             this.Write(this.ToStringHelper.ToStringWithCulture(rendererInfo.rendererReference.index));
