@@ -2,24 +2,16 @@
 Toolkit for making skins for Risk of Rain 2
 
 ## Setup
-#### Unity 2018.1 through 2019.2
- Start a new Unity3d Project and add this to your Packages/manifest.json dependencies array;
-```json
-    "com.kingenderbrine.rorskinbuilder": "https://github.com/KingEnderBrine/RoRSkinBuilder.git",
-```
+There are two ways of installing, either manually editing the projects manifest.json or by using the Unity Package Manager
+#### Manual:
+- Open the manifest.json file in ProjectRoot/Packages
+- Add the following to the top of dependencies
 
-## Update
-#### Unity 2018.1 through 2019.2
-Open Packages/manifest.json file. Find these 4 lines and remove them, then open Unity, that will download new version.
-```
-"lock": {
-    ...
-           
-    "com.kingenderbrine.rorskinbuilder": {
-      "revision": "HEAD",
-      "hash": "...."
-    },
-    
-    ...
-}
-```
+  `"com.kingenderbrine.rorskinbuilder": "https://github.com/KingEnderBrine/RoRSkinBuilder.git",` 
+- Save and close the file
+- Focus Unity to start the install
+    - If you encounter an error when you go back into Unity, make sure the syntax for the json is correct
+    - Examples of errors are extra or missing characters such as `,`, `{` and `}`
+#### Unity Package Manager
+- Add Package from Git URL by using the Unity Package Manager plus icon at the top left corner
+- Enter a url `https://github.com/KingEnderBrine/RoRSkinBuilder.git`;
