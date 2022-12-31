@@ -1,8 +1,11 @@
-﻿using RoRSkinBuilder.Data;
+﻿using RoRSkinBuilder.CodeGeneration;
+using RoRSkinBuilder.Data;
 using RoRSkinBuilder.SkinAPI;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Text;
 using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEditor.Compilation;
@@ -49,7 +52,6 @@ namespace RoRSkinBuilder.CustomEditors
             {
                 return;
             }
-            assetInfo.AddCsc();
 
             AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceUpdate);
             CompilationPipeline.assemblyCompilationFinished += WaitForCompilation;
@@ -75,6 +77,37 @@ namespace RoRSkinBuilder.CustomEditors
                 var buildFolder = Path.Combine(Environment.CurrentDirectory, "Builds", assetInfo.uccModName);
                 Directory.CreateDirectory(buildFolder);
                 File.Copy(Path.Combine(Environment.CurrentDirectory, "Library", "ScriptAssemblies", assetInfo.uccModName + ".dll"), Path.Combine(buildFolder, assetInfo.uccModName + ".dll"), true);
+                File.Copy(Path.Combine(assetInfo.assetBundlePath, assetInfo.assetBundleName), Path.Combine(buildFolder, assetInfo.assetBundleName), true);
+                Directory.CreateDirectory(Path.Combine(buildFolder, "Language"));
+
+                var tokensByLanguage = new Dictionary<string, Dictionary<string, string>>();
+                foreach (var skin in skinModInfo.skins)
+                {
+                    if (skin.nameTokenLocalizations.Count == 0)
+                    {
+                        continue;
+                    }
+                    var nameToken = skin.CreateNameToken(skinModInfo.author);
+
+                    foreach (var localization in skin.nameTokenLocalizations)
+                    {
+                        var language = localization.language.ToLower();
+                        if (!tokensByLanguage.TryGetValue(language, out var tokens))
+                        {
+                            tokensByLanguage[language] = tokens = new Dictionary<string, string>();
+                        }
+                        tokens[nameToken] = localization.value;
+                    }
+                }
+
+                foreach (var row in tokensByLanguage)
+                {
+                    var languageFolder = Path.Combine(buildFolder, "Language", row.Key);
+                    Directory.CreateDirectory(languageFolder);
+                    var tokensPath = Path.Combine(languageFolder, "tokens.json");
+                    File.WriteAllText(tokensPath, LanguageToJson(row.Value));
+                }
+
                 Process.Start(buildFolder);
             }
         }
@@ -122,6 +155,23 @@ namespace RoRSkinBuilder.CustomEditors
             }
 
             return true;
+        }
+
+        public static string LanguageToJson(Dictionary<string, string> strings)
+        {
+            var stringBuilder = new StringBuilder();
+            stringBuilder.AppendLine("{");
+            stringBuilder.Append("    \"strings\": {");
+            foreach (var item in strings)
+            {
+                stringBuilder.AppendLine().Append($"        \"{item.Key.EscapeJsonString()}\": \"{item.Value.EscapeJsonString()}\",");
+            }
+            stringBuilder.Remove(stringBuilder.Length - 1, 1);
+            stringBuilder.AppendLine();
+            stringBuilder.AppendLine("    }");
+            stringBuilder.AppendLine("}");
+
+            return stringBuilder.ToString();
         }
     }
 }

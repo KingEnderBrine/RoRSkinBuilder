@@ -19,6 +19,7 @@ namespace RoRSkinBuilder.Data
         public readonly string assetBundleName;
         public readonly string assetBundlePath;
         public readonly string modFolder;
+        public readonly Dictionary<SkinDefinition, string> skinDefPaths = new Dictionary<SkinDefinition, string>();
         public readonly Dictionary<Sprite, string> iconPaths = new Dictionary<Sprite, string>();
         public readonly Dictionary<IconColors, string> iconFromColorPaths = new Dictionary<IconColors, string>();
         public readonly Dictionary<Material, string> materialPaths = new Dictionary<Material, string>();
@@ -55,6 +56,13 @@ namespace RoRSkinBuilder.Data
             }
             Directory.CreateDirectory(tmpIconFolder);
 
+            var tmpSkinDefFolder = Path.Combine(modFolder, "SkinDefs");
+            if (Directory.Exists(tmpSkinDefFolder))
+            {
+                Directory.Delete(tmpSkinDefFolder, true);
+            }
+            Directory.CreateDirectory(tmpSkinDefFolder);
+
             var meshSet = new HashSet<Mesh>();
             foreach (var skin in skinModInfo.skins)
             {
@@ -62,6 +70,8 @@ namespace RoRSkinBuilder.Data
                 {
                     continue;
                 }
+
+                Sprite sprite = null;
                 if (skin.icon.createFromColors)
                 {
                     var path = Path.Combine(tmpIconFolder, skin.name + "Icon.png");
@@ -78,11 +88,22 @@ namespace RoRSkinBuilder.Data
                     textureImporter.SaveAndReimport();
 
                     iconFromColorPaths[skin.icon.colors] = path;
+                    sprite = AssetDatabase.LoadAssetAtPath<Sprite>(path);
                 }
                 else if (skin.icon.sprite)
                 {
                     iconPaths[skin.icon.sprite] = AssetDatabase.GetAssetPath(skin.icon.sprite);
+                    sprite = skin.icon.sprite;
                 }
+
+                var skinDef = ScriptableObject.CreateInstance<RoR2.SkinDef>();
+                skinDef.name = skin.bodyName.ToUpperCamelCase() + skin.name.ToUpperCamelCase() + "SkinDef";
+                skinDef.nameToken = skin.CreateNameToken(skinModInfo.author);
+                skinDef.icon = sprite;
+                var skinDefPath = Path.Combine(tmpSkinDefFolder, skinDef.name + ".asset");
+                AssetDatabase.CreateAsset(skinDef, skinDefPath);
+                skinDefPaths[skin] = skinDefPath;
+
                 foreach (var rendererInfo in skin.rendererInfos)
                 {
                     if (!rendererInfo.defaultMaterial)
@@ -133,6 +154,7 @@ namespace RoRSkinBuilder.Data
         public bool BuildAssetBundle()
         {
             var assetNames = new List<string>();
+            assetNames.AddRange(skinDefPaths.Values);
             assetNames.AddRange(materialPaths.Values);
             assetNames.AddRange(iconPaths.Values);
             assetNames.AddRange(meshPaths.Values);
@@ -161,12 +183,6 @@ namespace RoRSkinBuilder.Data
             return manifest != null;
         }
 
-        public void AddCsc()
-        {
-            var fullModFolderPath = Path.Combine(Environment.CurrentDirectory, modFolder);
-            File.WriteAllText(Path.Combine(fullModFolderPath, "csc.rsp"), $"-res:\"{Path.Combine(assetBundlePath, assetBundleName)}\",\"{uccModName}.{assetBundleName}\",public");
-        }
-
         private const string defaultAssemblyDefinition =
 @"
 {
@@ -182,8 +198,8 @@ namespace RoRSkinBuilder.Data
     ""overrideReferences"": true,
     ""precompiledReferences"": [
         ""RoR2-nstrip.dll"",
-        ""BepInEx.dll"",
-        ""MonoMod.RuntimeDetour.dll""
+        ""HGCSharpUtils-nstrip.dll"",
+        ""BepInEx.dll""
     ],
     ""autoReferenced"": false,
     ""defineConstraints"": [],

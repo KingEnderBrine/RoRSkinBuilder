@@ -1,17 +1,19 @@
 {
     "name": "RoRSkinBuilder",
-    "references": [],
-    "optionalUnityReferences": [],
+    "references": [
+        "RoR2"
+    ],
     "includePlatforms": [
         "Editor"
     ],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
-    "overrideReferences": false,
+    "overrideReferences": true,
     "precompiledReferences": [
-        "Assembly-CSharp.refstub.dll",
         "BepInEx.dll"
     ],
     "autoReferenced": true,
-    "defineConstraints": []
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
 }
