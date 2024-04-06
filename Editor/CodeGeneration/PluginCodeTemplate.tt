@@ -365,7 +365,13 @@ namespace <#= AssetsInfo.uccModName #>
 <#          foreach (var activation in skin.gameObjectActivations) { #>
                             new SkinDef.GameObjectActivation
                             {
+<# if (activation.accessType == GameObjectActivationAccessType.ByRendererIndex) { #>
                                 gameObject = renderers[<#= activation.rendererIndex #>].gameObject,
+<# } else if (activation.accessType == GameObjectActivationAccessType.ByRendererName) { #>
+                                gameObject = renderers.First(r => r.name == "<#= activation.rendererName #>").gameObject,
+<# } else if (activation.accessType == GameObjectActivationAccessType.ByPath) { #>
+                                gameObject = mdl.transform.Find("<#= activation.path #>").gameObject,
+<# } #>
                                 shouldActivate = <#= activation.shouldActivate.ToLiteral() #>
                             },
 <#          } #>

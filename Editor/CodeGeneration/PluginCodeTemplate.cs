@@ -469,9 +469,21 @@ namespace ");
                     "tion[]\r\n                        {\r\n");
           foreach (var activation in skin.gameObjectActivations) { 
             this.Write("                            new SkinDef.GameObjectActivation\r\n                   " +
-                    "         {\r\n                                gameObject = renderers[");
+                    "         {\r\n");
+ if (activation.accessType == GameObjectActivationAccessType.ByRendererIndex) { 
+            this.Write("                                gameObject = renderers[");
             this.Write(this.ToStringHelper.ToStringWithCulture(activation.rendererIndex));
-            this.Write("].gameObject,\r\n                                shouldActivate = ");
+            this.Write("].gameObject,\r\n");
+ } else if (activation.accessType == GameObjectActivationAccessType.ByRendererName) { 
+            this.Write("                                gameObject = renderers.First(r => r.name == \"");
+            this.Write(this.ToStringHelper.ToStringWithCulture(activation.rendererName));
+            this.Write("\").gameObject,\r\n");
+ } else if (activation.accessType == GameObjectActivationAccessType.ByPath) { 
+            this.Write("                                gameObject = mdl.transform.Find(\"");
+            this.Write(this.ToStringHelper.ToStringWithCulture(activation.path));
+            this.Write("\").gameObject,\r\n");
+ } 
+            this.Write("                                shouldActivate = ");
             this.Write(this.ToStringHelper.ToStringWithCulture(activation.shouldActivate.ToLiteral()));
             this.Write("\r\n                            },\r\n");
           } 
