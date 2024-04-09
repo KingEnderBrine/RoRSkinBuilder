@@ -9,46 +9,40 @@ namespace RoRSkinBuilder.CustomEditors
     {
         public readonly string propertyName;
         public readonly bool inverse;
-        public readonly string[] values;
+        public readonly object[] values;
 
         public ShowWhenAttribute(string propertyName, bool inverse, params object[] values)
         {
             this.propertyName = propertyName;
             this.inverse = inverse;
-            this.values = values.Select(el => el.ToString()).ToArray();
+            this.values = values;
         }
 
-        public ShowWhenAttribute(bool show)
+        public bool IsVisible(SerializedProperty conditionProperty)
         {
-            inverse = !show;
+            return inverse ^ values.Any(el => PropertyEquals(conditionProperty, el));
         }
 
-        public bool IsVisible(SerializedProperty rootProperty)
+        private bool PropertyEquals(SerializedProperty property, object el)
         {
-            if (string.IsNullOrWhiteSpace(propertyName))
+            if (property == null)
             {
-                return !inverse;
+                return false;
             }
-            var conditionProperty = rootProperty.FindPropertyRelative(propertyName);
-            
-            return inverse ^ values.Any(el => el == PropertyAsString(conditionProperty));
-        }
 
-        private string PropertyAsString(SerializedProperty property)
-        {
             switch (property.propertyType)
             {
                 case SerializedPropertyType.Integer:
-                    return property.intValue.ToString();
+                    return property.intValue == (int)el;
                 case SerializedPropertyType.String:
-                    return property.stringValue;
+                    return property.stringValue == (string)el;
                 case SerializedPropertyType.Enum:
-                    return property.enumNames[property.enumValueIndex];
+                    return property.enumValueIndex == (int)el;
                 case SerializedPropertyType.Boolean:
-                    return property.boolValue.ToString();
+                    return property.boolValue == (bool)el;
             }
 
-            return null;
+            return false;
         }
     }
 }

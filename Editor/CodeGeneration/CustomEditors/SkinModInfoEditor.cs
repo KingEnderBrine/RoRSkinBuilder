@@ -141,6 +141,8 @@ namespace RoRSkinBuilder.CustomEditors
                 return false;
             }
 
+            var replacementNames = new HashSet<string>();
+            var uniqueReplacements = new HashSet<MaterialReplacement>();
             foreach (var skin in skinModInfo.skins)
             {
                 if (!skin)
@@ -151,6 +153,18 @@ namespace RoRSkinBuilder.CustomEditors
                 if (string.IsNullOrWhiteSpace(skin.bodyName))
                 {
                     EditorUtility.DisplayDialog("Error", $"\"Body Name\" field for a \"{skin.name}\" skin is empty", "Ok");
+                    return false;
+                }
+                foreach (var renderer in skin.rendererInfos)
+                {
+                    if (renderer.useMaterialReplacement
+                        && renderer.materialReplacement
+                        && uniqueReplacements.Add(renderer.materialReplacement)
+                        && !replacementNames.Add(renderer.materialReplacement.name.ToUpperCamelCase()))
+                    {
+                        EditorUtility.DisplayDialog("Error", $"Duplicate \"Material Replacement\" name \"{renderer.materialReplacement.name}\"", "Ok");
+                        return false;
+                    }
                 }
             }
 

@@ -70,9 +70,17 @@ namespace ");
             this.Write("Plugin Instance { get; private set; }\r\n        internal static ManualLogSource In" +
                     "stanceLogger => Instance?.Logger;\r\n        \r\n        private static AssetBundle " +
                     "assetBundle;\r\n");
- if (AssetsInfo.materialsWithRoRShader.Count != 0) { 
+ if (AssetsInfo.materialsWithRoRShader.Count > 0) { 
             this.Write("        private static readonly List<Material> materialsWithRoRShader = new List<" +
                     "Material>();\r\n");
+ } 
+ if (AssetsInfo.texturePaths.Count > 0) { 
+            this.Write("        private static readonly Dictionary<string, Texture> preloadedTextures = n" +
+                    "ew Dictionary<string, Texture>();\r\n");
+ } 
+ if (AssetsInfo.materialReplacements.Any(r => r.useAddressablesMaterial)) { 
+            this.Write("        private static readonly Dictionary<string, Material> preloadedMaterials =" +
+                    " new Dictionary<string, Material>();\r\n");
  } 
             this.Write(@"
         private void Start()
@@ -138,6 +146,23 @@ namespace ");
             this.Write(");\r\n");
       } 
             this.Write("\r\n");
+      if (AssetsInfo.texturePaths.Count > 0) { 
+          startProgress = endProgress; endProgress = 0.35F; 
+            this.Write("                yield return PreloadTextures(args, ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(startProgress.ToFloatString()));
+            this.Write(", ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(endProgress.ToFloatString()));
+            this.Write(");\r\n");
+ } 
+ if (AssetsInfo.materialReplacements.Any(r => r.useAddressablesMaterial)) { 
+          startProgress = endProgress; endProgress = 0.4F; 
+            this.Write("                yield return PreloadMaterials(args, ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(startProgress.ToFloatString()));
+            this.Write(", ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(endProgress.ToFloatString()));
+            this.Write(");\r\n");
+ } 
+            this.Write("\r\n");
       var endProgressStep = (1F - endProgress) / ReorderedSkins.Count; 
       foreach (var skin in ReorderedSkins) { 
           startProgress = endProgress; endProgress += endProgressStep; 
@@ -160,24 +185,26 @@ namespace ");
             this.Write(this.ToStringHelper.ToStringWithCulture(skin.name.ToUpperCamelCase()));
             this.Write("Skin(args);\r\n");
  } 
-            this.Write(@"
-                args.ReportProgress(1);
-                yield break;
-            }
-
-            public IEnumerator FinalizeAsync(FinalizeAsyncArgs args)
-            {
-                args.ReportProgress(1F);
-                yield break;
-            }
-
-");
+            this.Write("\r\n                args.ReportProgress(1);\r\n                yield break;\r\n        " +
+                    "    }\r\n\r\n            public IEnumerator FinalizeAsync(FinalizeAsyncArgs args)\r\n " +
+                    "           {\r\n");
+ if (AssetsInfo.materialsWithRoRShader.Count > 0) { 
+            this.Write("                materialsWithRoRShader.Clear();\r\n");
+ } 
+ if (AssetsInfo.texturePaths.Count > 0) { 
+            this.Write("                preloadedTextures.Clear();\r\n");
+ } 
+ if (AssetsInfo.materialReplacements.Any(r => r.useAddressablesMaterial)) { 
+            this.Write("\t\t\t    preloadedMaterials.Clear();\r\n");
+ } 
+            this.Write("                args.ReportProgress(1F);\r\n                yield break;\r\n         " +
+                    "   }\r\n");
  if (AssetsInfo.materialsWithRoRShader.Count != 0) { 
       { 
           var startProgress = 0F; var endProgress = 0F; var endProgressStep = 1F / AssetsInfo.materialsWithRoRShader.Count; 
-            this.Write("            private static IEnumerator ReplaceShaders(LoadStaticContentAsyncArgs " +
-                    "args, float startProgress, float endProgress)\r\n            {\r\n                va" +
-                    "r totalProgress = endProgress - startProgress;\r\n\r\n");
+            this.Write("\r\n            private static IEnumerator ReplaceShaders(LoadStaticContentAsyncArg" +
+                    "s args, float startProgress, float endProgress)\r\n            {\r\n                " +
+                    "var totalProgress = endProgress - startProgress;\r\n\r\n");
           foreach (var row in AssetsInfo.materialsWithRoRShader) { 
               startProgress = endProgress; endProgress += endProgressStep; 
             this.Write("                yield return LoadMaterialsWithReplacedShader(args, startProgress " +
@@ -217,6 +244,46 @@ namespace ");
                 }
             }
 ");
+ } 
+      if (AssetsInfo.texturePaths.Count > 0) { 
+            this.Write("\r\n            private static IEnumerator PreloadTextures(LoadStaticContentAsyncAr" +
+                    "gs args, float startProgress, float endProgress)\r\n            {\r\n               " +
+                    " var operations = new IAsyncOperationWrapper[]\r\n                {\r\n");
+          foreach (var path in AssetsInfo.texturePaths.Values) { 
+            this.Write("                    LoadAssetAsync<Texture>(assetBundle, @\"");
+            this.Write(this.ToStringHelper.ToStringWithCulture(path.UnityPath()));
+            this.Write("\"),\r\n");
+          } 
+            this.Write("                };\r\n\r\n                yield return HandleAsyncOperationsProgress(" +
+                    "args, startProgress, endProgress, operations);\r\n\r\n");
+          foreach (var (path, i) in AssetsInfo.texturePaths.Values.GetIndexedEnumerable()) { 
+            this.Write("                preloadedTextures[\"");
+            this.Write(this.ToStringHelper.ToStringWithCulture(path.UnityPath()));
+            this.Write("\"] = operations[");
+            this.Write(this.ToStringHelper.ToStringWithCulture(i));
+            this.Write("].Asset as Texture;\r\n");
+          } 
+            this.Write("            }\r\n");
+ } 
+ if (AssetsInfo.materialReplacements.Any(r => r.useAddressablesMaterial)) { 
+            this.Write("\r\n            private static IEnumerator PreloadMaterials(LoadStaticContentAsyncA" +
+                    "rgs args, float startProgress, float endProgress)\r\n            {\r\n              " +
+                    "  var operations = new IAsyncOperationWrapper[]\r\n                {\r\n");
+          foreach (var replacement in AssetsInfo.materialReplacements.Where(r => r.useAddressablesMaterial)) { 
+            this.Write("                    LoadAssetAsync<Texture>(assetBundle, @\"");
+            this.Write(this.ToStringHelper.ToStringWithCulture(replacement.addressablesKey));
+            this.Write("\"),\r\n");
+          } 
+            this.Write("                };\r\n\r\n                yield return HandleAsyncOperationsProgress(" +
+                    "args, startProgress, endProgress, operations);\r\n\r\n");
+          foreach (var (replacement, i) in AssetsInfo.materialReplacements.Where(r => r.useAddressablesMaterial).GetIndexedEnumerable()) { 
+            this.Write("                preloadedMaterials[\"");
+            this.Write(this.ToStringHelper.ToStringWithCulture(replacement.addressablesKey));
+            this.Write("\"] = operations[");
+            this.Write(this.ToStringHelper.ToStringWithCulture(i));
+            this.Write("].Asset as Material;\r\n");
+          } 
+            this.Write("            }\r\n");
  } 
             this.Write("\r\n");
  foreach (var skin in ReorderedSkins) { 
@@ -266,7 +333,7 @@ namespace ");
             this.Write(this.ToStringHelper.ToStringWithCulture(AssetsInfo.skinDefPaths[skin].UnityPath()));
             this.Write("\"),\r\n");
           foreach (var (rendererInfo, i) in skin.rendererInfos.GetIndexedEnumerable()) { 
-              if (rendererInfo.defaultMaterial != null && !operationIndexByObject.ContainsKey(rendererInfo.defaultMaterial)) { 
+              if (!rendererInfo.useMaterialReplacement && rendererInfo.defaultMaterial != null && !operationIndexByObject.ContainsKey(rendererInfo.defaultMaterial)) { 
             this.Write("                    LoadAssetAsync<Material>(assetBundle, @\"");
             this.Write(this.ToStringHelper.ToStringWithCulture(AssetsInfo.materialPaths[rendererInfo.defaultMaterial].UnityPath()));
             this.Write("\"),\r\n");
@@ -320,7 +387,7 @@ namespace ");
                     "       {\r\n");
               foreach (var (rendererInfo, i) in skin.rendererInfos.GetIndexedEnumerable()) { 
             this.Write("                    new CharacterModel.RendererInfo\r\n                    {\r\n");
-                  if (rendererInfo.defaultMaterial == null) { 
+                  if (rendererInfo.useMaterialReplacement || rendererInfo.defaultMaterial == null) { 
             this.Write("                        defaultMaterial = null,\r\n");
                   } else { 
             this.Write("                        defaultMaterial = operations[");
@@ -493,6 +560,36 @@ namespace ");
             this.Write("                    TryCatchThrow(\"Renderer Infos\", () =>\r\n                    {\r" +
                     "\n");
           foreach (var (rendererInfo, i) in skin.rendererInfos.GetIndexedEnumerable()) { 
+              if (rendererInfo.useMaterialReplacement && rendererInfo.materialReplacement) { 
+                  var replacement = rendererInfo.materialReplacement; 
+                  if (replacement.useAddressablesMaterial) { 
+            this.Write("                        skin.rendererInfos[");
+            this.Write(this.ToStringHelper.ToStringWithCulture(i));
+            this.Write("].defaultMaterial = Create");
+            this.Write(this.ToStringHelper.ToStringWithCulture(replacement.name.ToUpperCamelCase()));
+            this.Write("MaterialReplacement(preloadedMaterials[\"");
+            this.Write(this.ToStringHelper.ToStringWithCulture(replacement.addressablesKey));
+            this.Write("\"]);\r\n");
+                  } else { 
+                      if (replacement.rendererReference.accessType == AccessType.ByIndex) { 
+            this.Write("                        skin.rendererInfos[");
+            this.Write(this.ToStringHelper.ToStringWithCulture(i));
+            this.Write("].defaultMaterial = Create");
+            this.Write(this.ToStringHelper.ToStringWithCulture(replacement.name.ToUpperCamelCase()));
+            this.Write("MaterialReplacement(renderers[");
+            this.Write(this.ToStringHelper.ToStringWithCulture(replacement.rendererReference.index));
+            this.Write("].material);\r\n");
+                      } else { 
+            this.Write("                        skin.rendererInfos[");
+            this.Write(this.ToStringHelper.ToStringWithCulture(i));
+            this.Write("].defaultMaterial = Create");
+            this.Write(this.ToStringHelper.ToStringWithCulture(replacement.name.ToUpperCamelCase()));
+            this.Write("MaterialReplacement(renderers.First(r => r.name == \"");
+            this.Write(this.ToStringHelper.ToStringWithCulture(replacement.rendererReference.name));
+            this.Write("\").material);\r\n");
+                      } 
+                  } 
+              } 
               if (rendererInfo.rendererReference.accessType == AccessType.ByIndex) { 
             this.Write("                        skin.rendererInfos[");
             this.Write(this.ToStringHelper.ToStringWithCulture(i));
@@ -605,6 +702,99 @@ namespace ");
             this.Write(this.ToStringHelper.ToStringWithCulture(skin.bodyName.ToUpperCamelCase()));
             this.Write(this.ToStringHelper.ToStringWithCulture(skin.name.ToUpperCamelCase()));
             this.Write("StopAdding = true;\r\n                }\r\n            }\r\n");
+ } 
+ foreach (var replacement in AssetsInfo.materialReplacements) { 
+            this.Write("            private static Material Create");
+            this.Write(this.ToStringHelper.ToStringWithCulture(replacement.name.ToUpperCamelCase()));
+            this.Write("MaterialReplacement(Material source)\r\n            {\r\n                var replacem" +
+                    "ent = Instantiate(source);\r\n\r\n");
+      foreach (var field in replacement.fields) {
+            switch (field.propertyType) {
+                case ShaderField.PropertyType.Texture: { 
+                    if (field.textureValue) { 
+            this.Write("                replacement.SetTexture(\"");
+            this.Write(this.ToStringHelper.ToStringWithCulture(field.propertyName));
+            this.Write("\", preloadedTextures[\"");
+            this.Write(this.ToStringHelper.ToStringWithCulture(AssetsInfo.texturePaths[field.textureValue].UnityPath()));
+            this.Write("\"]);\r\n");
+                  } else { 
+            this.Write("                replacement.SetTexture(\"");
+            this.Write(this.ToStringHelper.ToStringWithCulture(field.propertyName));
+            this.Write("\", null);\r\n");
+                  } 
+            this.Write("                replacement.SetTextureOffset(\"");
+            this.Write(this.ToStringHelper.ToStringWithCulture(field.propertyName));
+            this.Write("\", new Vector2(");
+            this.Write(this.ToStringHelper.ToStringWithCulture(field.offset.x.ToFloatString()));
+            this.Write(", ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(field.offset.y.ToFloatString()));
+            this.Write("));\r\n                replacement.SetTextureScale(\"");
+            this.Write(this.ToStringHelper.ToStringWithCulture(field.propertyName));
+            this.Write("\", new Vector2(");
+            this.Write(this.ToStringHelper.ToStringWithCulture(field.tiling.x.ToFloatString()));
+            this.Write(", ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(field.tiling.y.ToFloatString()));
+            this.Write("));\r\n");
+                  break;
+                }
+                case ShaderField.PropertyType.Vector: { 
+            this.Write("                replacement.SetVector(\"");
+            this.Write(this.ToStringHelper.ToStringWithCulture(field.propertyName));
+            this.Write("\", new Vector4(");
+            this.Write(this.ToStringHelper.ToStringWithCulture(field.vectorValue.x.ToFloatString()));
+            this.Write(", ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(field.vectorValue.y.ToFloatString()));
+            this.Write(", ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(field.vectorValue.z.ToFloatString()));
+            this.Write(", ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(field.vectorValue.w.ToFloatString()));
+            this.Write("));\r\n");
+                  break;
+                }
+                case ShaderField.PropertyType.Color: { 
+            this.Write("                replacement.SetColor(\"");
+            this.Write(this.ToStringHelper.ToStringWithCulture(field.propertyName));
+            this.Write("\", new Color(");
+            this.Write(this.ToStringHelper.ToStringWithCulture(field.colorValue.r.ToFloatString()));
+            this.Write(", ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(field.colorValue.g.ToFloatString()));
+            this.Write(", ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(field.colorValue.b.ToFloatString()));
+            this.Write(", ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(field.colorValue.a.ToFloatString()));
+            this.Write("));\r\n");
+                  break;
+                }
+                case ShaderField.PropertyType.Range:
+                case ShaderField.PropertyType.Enum:
+                case ShaderField.PropertyType.Float: { 
+            this.Write("                replacement.SetFloat(\"");
+            this.Write(this.ToStringHelper.ToStringWithCulture(field.propertyName));
+            this.Write("\", ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(field.floatValue.ToFloatString()));
+            this.Write(");\r\n");
+                  break;
+                }
+                case ShaderField.PropertyType.Toggle: { 
+            this.Write("                replacement.SetFloat(\"");
+            this.Write(this.ToStringHelper.ToStringWithCulture(field.propertyName));
+            this.Write("\", ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(field.floatValue.ToFloatString()));
+            this.Write(");\r\n");
+              if (field.floatValue != 0) { 
+            this.Write("                replacement.EnableKeyword(\"");
+            this.Write(this.ToStringHelper.ToStringWithCulture(field.keyword));
+            this.Write("\");\r\n");
+              } else { 
+            this.Write("                replacement.DisableKeyword(\"");
+            this.Write(this.ToStringHelper.ToStringWithCulture(field.keyword));
+            this.Write("\");\r\n");
+              } 
+                  break;
+                }
+            } 
+      } 
+            this.Write("\r\n                return replacement;\r\n            }\r\n");
  } 
             this.Write("\r\n            private static IEnumerator HandleAsyncOperationProgress(LoadStaticC" +
                     "ontentAsyncArgs args, AsyncOperation operation, float startProgress, float endPr" +

@@ -26,6 +26,8 @@ namespace RoRSkinBuilder.Data
         public readonly Dictionary<Mesh, string> meshPaths = new Dictionary<Mesh, string>();
         public readonly Dictionary<GameObject, string> gameObjectPaths = new Dictionary<GameObject, string>();
         public readonly Dictionary<string, HashSet<Material>> materialsWithRoRShader = new Dictionary<string, HashSet<Material>>();
+        public readonly HashSet<MaterialReplacement> materialReplacements = new HashSet<MaterialReplacement>();
+        public readonly Dictionary<Texture, string> texturePaths = new Dictionary<Texture, string>();
 
         public AssetsInfo(SkinModInfo skinModInfo)
         {
@@ -106,14 +108,30 @@ namespace RoRSkinBuilder.Data
 
                 foreach (var rendererInfo in skin.rendererInfos)
                 {
-                    if (!rendererInfo.defaultMaterial)
+                    if (rendererInfo.useMaterialReplacement)
                     {
-                        continue;
+                        if (rendererInfo.materialReplacement && materialReplacements.Add(rendererInfo.materialReplacement))
+                        {
+                            foreach (var field in rendererInfo.materialReplacement.fields)
+                            {
+                                if (field.propertyType == ShaderField.PropertyType.Texture && field.textureValue)
+                                {
+                                    texturePaths[field.textureValue] = AssetDatabase.GetAssetPath(field.textureValue);
+                                }
+                            }
+                        }
                     }
-                    materialPaths[rendererInfo.defaultMaterial] = AssetDatabase.GetAssetPath(rendererInfo.defaultMaterial);
-                    if (shaderPaths.TryGetValue(rendererInfo.defaultMaterial.shader.name, out var shaderPath))
+                    else
                     {
-                        materialsWithRoRShader.GetOrAdd(shaderPath, () => new HashSet<Material>()).Add(rendererInfo.defaultMaterial);
+                        if (!rendererInfo.defaultMaterial)
+                        {
+                            continue;
+                        }
+                        materialPaths[rendererInfo.defaultMaterial] = AssetDatabase.GetAssetPath(rendererInfo.defaultMaterial);
+                        if (shaderPaths.TryGetValue(rendererInfo.defaultMaterial.shader.name, out var shaderPath))
+                        {
+                            materialsWithRoRShader.GetOrAdd(shaderPath, () => new HashSet<Material>()).Add(rendererInfo.defaultMaterial);
+                        }
                     }
                 }
 

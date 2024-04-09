@@ -40,8 +40,14 @@ namespace <#= AssetsInfo.uccModName #>
         internal static ManualLogSource InstanceLogger => Instance?.Logger;
         
         private static AssetBundle assetBundle;
-<# if (AssetsInfo.materialsWithRoRShader.Count != 0) { #>
+<# if (AssetsInfo.materialsWithRoRShader.Count > 0) { #>
         private static readonly List<Material> materialsWithRoRShader = new List<Material>();
+<# } #>
+<# if (AssetsInfo.texturePaths.Count > 0) { #>
+        private static readonly Dictionary<string, Texture> preloadedTextures = new Dictionary<string, Texture>();
+<# } #>
+<# if (AssetsInfo.materialReplacements.Any(r => r.useAddressablesMaterial)) { #>
+        private static readonly Dictionary<string, Material> preloadedMaterials = new Dictionary<string, Material>();
 <# } #>
 
         private void Start()
@@ -96,6 +102,15 @@ namespace <#= AssetsInfo.uccModName #>
                 yield return ReplaceShaders(args, <#= startProgress.ToFloatString() #>, <#= endProgress.ToFloatString() #>);
 <#      } #>
 
+<#      if (AssetsInfo.texturePaths.Count > 0) { #>
+<#          startProgress = endProgress; endProgress = 0.35F; #>
+                yield return PreloadTextures(args, <#= startProgress.ToFloatString() #>, <#= endProgress.ToFloatString() #>);
+<# } #>
+<# if (AssetsInfo.materialReplacements.Any(r => r.useAddressablesMaterial)) { #>
+<#          startProgress = endProgress; endProgress = 0.4F; #>
+                yield return PreloadMaterials(args, <#= startProgress.ToFloatString() #>, <#= endProgress.ToFloatString() #>);
+<# } #>
+
 <#      var endProgressStep = (1F - endProgress) / ReorderedSkins.Count; #>
 <#      foreach (var skin in ReorderedSkins) { #>
 <#          startProgress = endProgress; endProgress += endProgressStep; #>
@@ -118,13 +133,22 @@ namespace <#= AssetsInfo.uccModName #>
 
             public IEnumerator FinalizeAsync(FinalizeAsyncArgs args)
             {
+<# if (AssetsInfo.materialsWithRoRShader.Count > 0) { #>
+                materialsWithRoRShader.Clear();
+<# } #>
+<# if (AssetsInfo.texturePaths.Count > 0) { #>
+                preloadedTextures.Clear();
+<# } #>
+<# if (AssetsInfo.materialReplacements.Any(r => r.useAddressablesMaterial)) { #>
+			    preloadedMaterials.Clear();
+<# } #>
                 args.ReportProgress(1F);
                 yield break;
             }
-
 <# if (AssetsInfo.materialsWithRoRShader.Count != 0) { #>
 <#      { #>
 <#          var startProgress = 0F; var endProgress = 0F; var endProgressStep = 1F / AssetsInfo.materialsWithRoRShader.Count; #>
+
             private static IEnumerator ReplaceShaders(LoadStaticContentAsyncArgs args, float startProgress, float endProgress)
             {
                 var totalProgress = endProgress - startProgress;
@@ -161,6 +185,42 @@ namespace <#= AssetsInfo.uccModName #>
                 }
             }
 <# } #>
+<#      if (AssetsInfo.texturePaths.Count > 0) { #>
+
+            private static IEnumerator PreloadTextures(LoadStaticContentAsyncArgs args, float startProgress, float endProgress)
+            {
+                var operations = new IAsyncOperationWrapper[]
+                {
+<#          foreach (var path in AssetsInfo.texturePaths.Values) { #>
+                    LoadAssetAsync<Texture>(assetBundle, @"<#= path.UnityPath() #>"),
+<#          } #>
+                };
+
+                yield return HandleAsyncOperationsProgress(args, startProgress, endProgress, operations);
+
+<#          foreach (var (path, i) in AssetsInfo.texturePaths.Values.GetIndexedEnumerable()) { #>
+                preloadedTextures["<#= path.UnityPath() #>"] = operations[<#= i #>].Asset as Texture;
+<#          } #>
+            }
+<# } #>
+<# if (AssetsInfo.materialReplacements.Any(r => r.useAddressablesMaterial)) { #>
+
+            private static IEnumerator PreloadMaterials(LoadStaticContentAsyncArgs args, float startProgress, float endProgress)
+            {
+                var operations = new IAsyncOperationWrapper[]
+                {
+<#          foreach (var replacement in AssetsInfo.materialReplacements.Where(r => r.useAddressablesMaterial)) { #>
+                    LoadAssetAsync<Texture>(assetBundle, @"<#= replacement.addressablesKey #>"),
+<#          } #>
+                };
+
+                yield return HandleAsyncOperationsProgress(args, startProgress, endProgress, operations);
+
+<#          foreach (var (replacement, i) in AssetsInfo.materialReplacements.Where(r => r.useAddressablesMaterial).GetIndexedEnumerable()) { #>
+                preloadedMaterials["<#= replacement.addressablesKey #>"] = operations[<#= i #>].Asset as Material;
+<#          } #>
+            }
+<# } #>
 
 <# foreach (var skin in ReorderedSkins) { #>
             static partial void Prepare<#= skin.bodyName.ToUpperCamelCase() #><#= skin.name.ToUpperCamelCase() #>SkinLoadingAssets(ref IAsyncOperationWrapper[] operations);
@@ -193,7 +253,7 @@ namespace <#= AssetsInfo.uccModName #>
                 {
                     LoadAssetAsync<SkinDef>(assetBundle, "<#= AssetsInfo.skinDefPaths[skin].UnityPath() #>"),
 <#          foreach (var (rendererInfo, i) in skin.rendererInfos.GetIndexedEnumerable()) { #>
-<#              if (rendererInfo.defaultMaterial != null && !operationIndexByObject.ContainsKey(rendererInfo.defaultMaterial)) { #>
+<#              if (!rendererInfo.useMaterialReplacement && rendererInfo.defaultMaterial != null && !operationIndexByObject.ContainsKey(rendererInfo.defaultMaterial)) { #>
                     LoadAssetAsync<Material>(assetBundle, @"<#= AssetsInfo.materialPaths[rendererInfo.defaultMaterial].UnityPath() #>"),
 <# operationIndexByObject[rendererInfo.defaultMaterial] = nextOperationIndex++; #>
 <#              } #>
@@ -237,7 +297,7 @@ namespace <#= AssetsInfo.uccModName #>
 <#              foreach (var (rendererInfo, i) in skin.rendererInfos.GetIndexedEnumerable()) { #>
                     new CharacterModel.RendererInfo
                     {
-<#                  if (rendererInfo.defaultMaterial == null) { #>
+<#                  if (rendererInfo.useMaterialReplacement || rendererInfo.defaultMaterial == null) { #>
                         defaultMaterial = null,
 <#                  } else { #>
                         defaultMaterial = operations[<#= operationIndexByObject[rendererInfo.defaultMaterial] #>].Asset as Material,
@@ -382,6 +442,18 @@ namespace <#= AssetsInfo.uccModName #>
                     TryCatchThrow("Renderer Infos", () =>
                     {
 <#          foreach (var (rendererInfo, i) in skin.rendererInfos.GetIndexedEnumerable()) { #>
+<#              if (rendererInfo.useMaterialReplacement && rendererInfo.materialReplacement) { #>
+<#                  var replacement = rendererInfo.materialReplacement; #>
+<#                  if (replacement.useAddressablesMaterial) { #>
+                        skin.rendererInfos[<#= i #>].defaultMaterial = Create<#= replacement.name.ToUpperCamelCase() #>MaterialReplacement(preloadedMaterials["<#= replacement.addressablesKey #>"]);
+<#                  } else { #>
+<#                      if (replacement.rendererReference.accessType == AccessType.ByIndex) { #>
+                        skin.rendererInfos[<#= i #>].defaultMaterial = Create<#= replacement.name.ToUpperCamelCase() #>MaterialReplacement(renderers[<#= replacement.rendererReference.index #>].material);
+<#                      } else { #>
+                        skin.rendererInfos[<#= i #>].defaultMaterial = Create<#= replacement.name.ToUpperCamelCase() #>MaterialReplacement(renderers.First(r => r.name == "<#= replacement.rendererReference.name #>").material);
+<#                      } #>
+<#                  } #>
+<#              } #>
 <#              if (rendererInfo.rendererReference.accessType == AccessType.ByIndex) { #>
                         skin.rendererInfos[<#= i #>].renderer = renderers[<#= rendererInfo.rendererReference.index #>];
 <#              } else { #>
@@ -453,6 +525,52 @@ namespace <#= AssetsInfo.uccModName #>
                     InstanceLogger.LogError(e);
                     <#= skin.bodyName.ToUpperCamelCase() #><#= skin.name.ToUpperCamelCase() #>StopAdding = true;
                 }
+            }
+<# } #>
+<# foreach (var replacement in AssetsInfo.materialReplacements) { #>
+            private static Material Create<#= replacement.name.ToUpperCamelCase() #>MaterialReplacement(Material source)
+            {
+                var replacement = Instantiate(source);
+
+<#      foreach (var field in replacement.fields) {
+            switch (field.propertyType) {
+                case ShaderField.PropertyType.Texture: { 
+                    if (field.textureValue) { #>
+                replacement.SetTexture("<#= field.propertyName #>", preloadedTextures["<#= AssetsInfo.texturePaths[field.textureValue].UnityPath() #>"]);
+<#                  } else { #>
+                replacement.SetTexture("<#= field.propertyName #>", null);
+<#                  } #>
+                replacement.SetTextureOffset("<#= field.propertyName #>", new Vector2(<#= field.offset.x.ToFloatString() #>, <#= field.offset.y.ToFloatString() #>));
+                replacement.SetTextureScale("<#= field.propertyName #>", new Vector2(<#= field.tiling.x.ToFloatString() #>, <#= field.tiling.y.ToFloatString() #>));
+<#                  break;
+                }
+                case ShaderField.PropertyType.Vector: { #>
+                replacement.SetVector("<#= field.propertyName #>", new Vector4(<#= field.vectorValue.x.ToFloatString() #>, <#= field.vectorValue.y.ToFloatString() #>, <#= field.vectorValue.z.ToFloatString() #>, <#= field.vectorValue.w.ToFloatString() #>));
+<#                  break;
+                }
+                case ShaderField.PropertyType.Color: { #>
+                replacement.SetColor("<#= field.propertyName #>", new Color(<#= field.colorValue.r.ToFloatString() #>, <#= field.colorValue.g.ToFloatString() #>, <#= field.colorValue.b.ToFloatString() #>, <#= field.colorValue.a.ToFloatString() #>));
+<#                  break;
+                }
+                case ShaderField.PropertyType.Range:
+                case ShaderField.PropertyType.Enum:
+                case ShaderField.PropertyType.Float: { #>
+                replacement.SetFloat("<#= field.propertyName #>", <#= field.floatValue.ToFloatString() #>);
+<#                  break;
+                }
+                case ShaderField.PropertyType.Toggle: { #>
+                replacement.SetFloat("<#= field.propertyName #>", <#= field.floatValue.ToFloatString() #>);
+<#              if (field.floatValue != 0) { #>
+                replacement.EnableKeyword("<#= field.keyword #>");
+<#              } else { #>
+                replacement.DisableKeyword("<#= field.keyword #>");
+<#              } #>
+<#                  break;
+                }
+            } #>
+<#      } #>
+
+                return replacement;
             }
 <# } #>
 

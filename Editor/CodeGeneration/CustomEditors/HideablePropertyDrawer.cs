@@ -9,53 +9,75 @@ namespace RoRSkinBuilder.CustomEditors
 {
     public abstract class HideablePropertyDrawer<T> : PropertyDrawer
     {
-        private const int propertyHeigh = 16;
-        private static readonly Dictionary<Type, DrawerInfo> drawerInfos = new Dictionary<Type, DrawerInfo>();
+        private const int propertyHeight = 18;
 
         protected virtual bool CanBeHidden => true;
         protected virtual bool Indent => true;
         protected virtual bool ShowLabel => true;
+        protected virtual bool InlineIfOnlyOneProperty => false;
 
-        private readonly DrawerInfo drawerInfo;
+        private readonly List<string> fieldNames = new List<string>();
+        private readonly List<ShowWhenAttribute> showWhenAttributes = new List<ShowWhenAttribute>();
+
         public HideablePropertyDrawer()
         {
-            if (drawerInfos.TryGetValue(typeof(T), out drawerInfo))
+            var fields = typeof(T).GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.FlattenHierarchy);
+
+            for (int i = 0; i < fields.Length; i++)
             {
-                return;
-            }
-            drawerInfo = new DrawerInfo();
-            
-            foreach (var field in typeof(T).GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.FlattenHierarchy))
-            {
+                var field = fields[i];
                 if ((field.IsPrivate && field.GetCustomAttribute<SerializeField>() != null) || (field.IsPublic && field.GetCustomAttribute<HideInInspector>() == null))
                 {
-                    drawerInfo.childProperties[field.Name] = field.GetCustomAttribute<ShowWhenAttribute>();
+                    fieldNames.Add(field.Name);
+                    showWhenAttributes.Add(field.GetCustomAttribute<ShowWhenAttribute>());
                 }
             }
-
-            drawerInfos[typeof(T)] = drawerInfo;
         }
 
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {
             var isExpandedProperty = property.FindPropertyRelative("isExpanded");
+            if (isExpandedProperty == null)
+            {
 
-            return isExpandedProperty.boolValue ? drawerInfo.GetVisiblePropertiesHeight(property) - (ShowLabel || CanBeHidden ? 0 : propertyHeigh) : propertyHeigh;
+            }
+            if (isExpandedProperty.boolValue)
+            {
+                var visibilityEvaluation = EvaluateVisibleProperties(property, out var moreThanOne);
+                var sum = 0f;
+                foreach (var prop in VisibleProperties(property, visibilityEvaluation))
+                {
+                    sum += EditorGUI.GetPropertyHeight(prop, true);
+                }
+
+                if (!InlineIfOnlyOneProperty || moreThanOne)
+                {
+                    sum += propertyHeight;
+                }
+
+                return sum - (ShowLabel || CanBeHidden ? 0 : propertyHeight);
+            }
+
+            return propertyHeight;
         }
 
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
+            var visibilityEvaluation = EvaluateVisibleProperties(property, out var moreThanOne);
+            label = new GUIContent(label.text);
             var isExpandedProperty = property.FindPropertyRelative("isExpanded");
-        
+            var shouldBeInlined = InlineIfOnlyOneProperty && !moreThanOne && CanBeInlined(property, visibilityEvaluation);
+            var labelHeight = 0;
             EditorGUI.BeginProperty(position, label, property);
             property.isExpanded = false;
             if (CanBeHidden)
             {
-                isExpandedProperty.boolValue = !ShowLabel || EditorGUI.Foldout(new Rect(position.x, position.y, position.width, propertyHeigh), isExpandedProperty.boolValue, label, true);
+                isExpandedProperty.boolValue = !ShowLabel || EditorGUI.Foldout(new Rect(position.x, position.y, position.width, propertyHeight), isExpandedProperty.boolValue, label, true);
             }
-            else if (ShowLabel)
+            else if (ShowLabel && !shouldBeInlined)
             {
-                EditorGUI.LabelField(new Rect(position.x, position.y, position.width, propertyHeigh), label);
+                EditorGUI.LabelField(new Rect(position.x, position.y, position.width, propertyHeight), label);
+                labelHeight = propertyHeight;
                 isExpandedProperty.boolValue = true;
             }
             else
@@ -66,21 +88,18 @@ namespace RoRSkinBuilder.CustomEditors
             if (isExpandedProperty.boolValue)
             {
                 var y = position.y;
-                if (ShowLabel)
+                if (ShowLabel && !shouldBeInlined)
                 {
-                    y += propertyHeigh;
+                    y += propertyHeight;
                 }
-                if (Indent)
+                if (Indent && !shouldBeInlined)
                 {
                     EditorGUI.indentLevel++;
                 }
-                foreach (var childProperty in drawerInfo.GetVisibleProperties(property))
-                {
-                    var height = EditorGUI.GetPropertyHeight(childProperty);
-                    EditorGUI.PropertyField(new Rect(position.x, y, position.width, height), childProperty, true);
-                    y += height;
-                }
-                if (Indent)
+
+                DrawChildProperties(new Rect(position.x, y, position.width, position.height - labelHeight), property, label, shouldBeInlined, visibilityEvaluation);
+
+                if (Indent && !shouldBeInlined)
                 {
                     EditorGUI.indentLevel--;
                 }
@@ -88,19 +107,95 @@ namespace RoRSkinBuilder.CustomEditors
             EditorGUI.EndProperty();
         }
 
-        private class DrawerInfo
+        protected virtual void DrawChildProperties(Rect position, SerializedProperty property, GUIContent label, bool shouldBeInlined, bool[] visibilityEvaluation)
         {
-            public readonly Dictionary<string, ShowWhenAttribute> childProperties = new Dictionary<string, ShowWhenAttribute>();
-
-            public float GetVisiblePropertiesHeight(SerializedProperty rootProperty)
+            var y = position.y;
+            foreach (var prop in VisibleProperties(property, visibilityEvaluation))
             {
-                return childProperties.Where(el => el.Value?.IsVisible(rootProperty) ?? true).Sum(el => EditorGUI.GetPropertyHeight(rootProperty.FindPropertyRelative(el.Key), true)) + propertyHeigh;
+                if (shouldBeInlined)
+                {
+                    EditorGUI.PropertyField(position, prop, label, true);
+                    return;
+                }
+
+                var height = EditorGUI.GetPropertyHeight(prop);
+                EditorGUI.PropertyField(new Rect(position.x, y, position.width, height), prop, true);
+                y += height;
+            }
+        }
+
+        private bool[] EvaluateVisibleProperties(SerializedProperty property, out bool moreThanOne)
+        {
+            var prop = property.Copy();
+            if (!prop.Next(true))
+            {
+                moreThanOne = false;
+                return Array.Empty<bool>();
             }
 
-            public IEnumerable<SerializedProperty> GetVisibleProperties(SerializedProperty rootProperty)
+            var countVisible = 0;
+            var visibilityEvaluation = new bool[fieldNames.Count];
+            for (var i = 0; i < visibilityEvaluation.Length; i++)
             {
-                return childProperties.Where(el => el.Value?.IsVisible(rootProperty) ?? true).Select(el => rootProperty.FindPropertyRelative(el.Key));
+                visibilityEvaluation[i] = true;
             }
+
+            do
+            {
+                for (var i = 0; i < fieldNames.Count; i++)
+                {
+                    var showWhenAttribute = showWhenAttributes[i];
+                    if (showWhenAttribute != null && showWhenAttribute.propertyName == prop.name)
+                    {
+                        var isVisible = showWhenAttribute.IsVisible(prop);
+                        if (isVisible)
+                        {
+                            countVisible++;
+                        }
+                        visibilityEvaluation[i] = isVisible;
+                    }
+                }
+            }
+            while (prop.Next(false));
+
+            moreThanOne = countVisible > 1;
+            return visibilityEvaluation;
+        }
+        
+        private IEnumerable<SerializedProperty> VisibleProperties(SerializedProperty property, bool[] visibilityEvaluation)
+        {
+            var prop = property.Copy();
+            if (!prop.Next(true))
+            {
+                yield break;
+            }
+
+            do
+            {
+                for (var i = 0; i < fieldNames.Count; i++)
+                {
+                    if (fieldNames[i] == prop.name)
+                    {
+                        if (visibilityEvaluation[i])
+                        {
+                            yield return prop;
+                        }
+                        break;
+                    }
+                }
+            }
+            while (prop.Next(false));
+        }
+
+        private bool CanBeInlined(SerializedProperty rootProperty, bool[] visibilityEvaluation)
+        {
+            var first = VisibleProperties(rootProperty, visibilityEvaluation).FirstOrDefault();
+            if (first is null)
+            {
+                return false;
+            }
+
+            return EditorGUI.GetPropertyHeight(first, true) <= propertyHeight;
         }
     }
 }
