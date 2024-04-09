@@ -210,7 +210,7 @@ namespace <#= AssetsInfo.uccModName #>
                 var operations = new IAsyncOperationWrapper[]
                 {
 <#          foreach (var replacement in AssetsInfo.materialReplacements.Where(r => r.useAddressablesMaterial)) { #>
-                    LoadAssetAsync<Material>(assetBundle, @"<#= replacement.addressablesKey #>"),
+                    LoadAddressablesAssetAsync<Material>(@"<#= replacement.addressablesKey #>"),
 <#          } #>
                 };
 

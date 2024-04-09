@@ -270,7 +270,7 @@ namespace ");
                     "rgs args, float startProgress, float endProgress)\r\n            {\r\n              " +
                     "  var operations = new IAsyncOperationWrapper[]\r\n                {\r\n");
           foreach (var replacement in AssetsInfo.materialReplacements.Where(r => r.useAddressablesMaterial)) { 
-            this.Write("                    LoadAssetAsync<Material>(assetBundle, @\"");
+            this.Write("                    LoadAddressablesAssetAsync<Material>(@\"");
             this.Write(this.ToStringHelper.ToStringWithCulture(replacement.addressablesKey));
             this.Write("\"),\r\n");
           } 
