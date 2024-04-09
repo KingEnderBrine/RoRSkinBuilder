@@ -177,6 +177,7 @@ namespace RoRSkinBuilder.Data
             assetNames.AddRange(iconPaths.Values);
             assetNames.AddRange(meshPaths.Values);
             assetNames.AddRange(iconFromColorPaths.Values);
+            assetNames.AddRange(texturePaths.Values);
 
             foreach (var resource in skinModInfo.additionalResources)
             {
