@@ -75,8 +75,16 @@ namespace RoRSkinBuilder.CustomEditors
                 }
 
                 var buildFolder = Path.Combine(Environment.CurrentDirectory, "Builds", assetInfo.uccModName);
+                if (Directory.Exists(buildFolder))
+                {
+                    Directory.Delete(buildFolder, true);
+                }
                 Directory.CreateDirectory(buildFolder);
                 File.Copy(Path.Combine(Environment.CurrentDirectory, "Library", "ScriptAssemblies", assetInfo.uccModName + ".dll"), Path.Combine(buildFolder, assetInfo.uccModName + ".dll"), true);
+                if (skinModInfo.copyDebugFile)
+                {
+                    File.Copy(Path.Combine(Environment.CurrentDirectory, "Library", "ScriptAssemblies", assetInfo.uccModName + ".pdb"), Path.Combine(buildFolder, assetInfo.uccModName + ".pdb"), true);
+                }
                 File.Copy(Path.Combine(assetInfo.assetBundlePath, assetInfo.assetBundleName), Path.Combine(buildFolder, assetInfo.assetBundleName), true);
                 Directory.CreateDirectory(Path.Combine(buildFolder, "Language"));
 

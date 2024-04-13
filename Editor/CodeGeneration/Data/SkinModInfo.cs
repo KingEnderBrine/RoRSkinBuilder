@@ -21,5 +21,7 @@ namespace RoRSkinBuilder.Data
         public bool regenerateCode = true;
         [Tooltip("Should AssemblyDefinition be regenerated on build")]
         public bool regenerateAssemblyDefinition = true;
+        [Tooltip("Should .pdb file be copied to the output.")]
+        public bool copyDebugFile = false;
     }
 }
