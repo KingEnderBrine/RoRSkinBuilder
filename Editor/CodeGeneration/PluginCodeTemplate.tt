@@ -17,6 +17,7 @@ using System.Security.Permissions;
 using MonoMod.RuntimeDetour.HookGen;
 using RoR2.ContentManagement;
 using UnityEngine.AddressableAssets;
+using RoR2.Projectile;
 
 
 #pragma warning disable CS0618 // Type or member is obsolete
@@ -112,7 +113,7 @@ foreach (var skin in ReorderedSkins) {
     } 
 } #>
 <# foreach (var row in defaultTokens) { #>
-            self.SetStringByToken("<#= row.Key #>", "<#= row.Value #>");
+            self.SetStringByToken("<#= row.Key #>", "<#= row.Value.Escape() #>");
 <# } #>
 <# if (tokensByLanguage.Count > 0) { #>
 
@@ -121,7 +122,7 @@ foreach (var skin in ReorderedSkins) {
 <#     foreach (var row in tokensByLanguage) { #>
                 case "<#= row.Key #>":
 <#         foreach (var value in row.Value) { #>
-                    self.SetStringByToken("<#= value.Key #>", "<#= value.Value #>");
+                    self.SetStringByToken("<#= value.Key #>", "<#= value.Value.Escape() #>");
 <#         } #>
                     break;
 <#     } #>
@@ -129,23 +130,13 @@ foreach (var skin in ReorderedSkins) {
 <# } #>
         }
 
-        private static void Nothing(Action<SkinDef> orig, SkinDef self)
-        {
-
-        }
-
         private static void BodyCatalogInit()
         {
             BeforeBodyCatalogInit();
 
-            var awake = typeof(SkinDef).GetMethod(nameof(SkinDef.Awake), BindingFlags.NonPublic | BindingFlags.Instance);
-            HookEndpointManager.Add(awake, (Action<Action<SkinDef>, SkinDef>)Nothing);
-
 <# foreach (var skin in ReorderedSkins) { #>
             Add<#= skin.bodyName.ToUpperCamelCase() #><#= skin.name.ToUpperCamelCase() #>Skin();
 <# } #>
-            
-            HookEndpointManager.Remove(awake, (Action<Action<SkinDef>, SkinDef>)Nothing);
 
             AfterBodyCatalogInit();
         }
@@ -193,23 +184,13 @@ foreach (var skin in ReorderedSkins) {
                     return;
                 }
 
-<# switch (skin.renderersSource)
-{
-    case RenderersSource.AllRendererComponents: #>
                 var renderers = mdl.GetComponentsInChildren<Renderer>(true);
-<#      break;
-    case RenderersSource.BaseRendererInfos: #>
-                var characterModel = mdl.GetComponent<CharacterModel>();
-                if (!characterModel)
-                {
-                    InstanceLogger.LogWarning($"Failed to add \"{skinName}\" skin to \"{bodyName}\" because it doesn't have \"CharacterModel\" component");
-                    return;
-                }
-                var renderers = characterModel.baseRendererInfos.Select(info => info.renderer).ToArray();
-<#      break;
-} #>
+                var lights = mdl.GetComponentsInChildren<Light>(true);
 
                 var skin = ScriptableObject.CreateInstance<SkinDef>();
+                var skinParams = ScriptableObject.CreateInstance<SkinDefParams>();
+                skin.skinDefParams = skinParams;
+
                 TryCatchThrow("Icon", () =>
                 {
 <# if (!skin.icon.createFromColors) {
@@ -253,16 +234,14 @@ foreach (var skin in ReorderedSkins) {
                 TryCatchThrow("Game Object Activations", () =>
                 {
 <# if (skin.gameObjectActivations.Count == 0) { #>
-                    skin.gameObjectActivations = Array.Empty<SkinDef.GameObjectActivation>();
+                    skinParams.gameObjectActivations = Array.Empty<SkinDefParams.GameObjectActivation>();
 <# } else { #>
-                    skin.gameObjectActivations = new SkinDef.GameObjectActivation[]
+                    skinParams.gameObjectActivations = new SkinDefParams.GameObjectActivation[]
                     {
 <# foreach (var activation in skin.gameObjectActivations) { #>
-                        new SkinDef.GameObjectActivation
+                        new SkinDefParams.GameObjectActivation
                         {
-<# if (activation.accessType == GameObjectActivationAccessType.ByRendererIndex) { #>
-                            gameObject = renderers[<#= activation.rendererIndex #>].gameObject,
-<# } else if (activation.accessType == GameObjectActivationAccessType.ByRendererName) { #>
+<# if (activation.accessType == GameObjectActivationAccessType.ByRendererName) { #>
                             gameObject = renderers.First(r => r.name == "<#= activation.rendererName #>").gameObject,
 <# } else if (activation.accessType == GameObjectActivationAccessType.ByPath) { #>
                             gameObject = mdl.transform.Find("<#= activation.path #>").gameObject,
@@ -276,9 +255,9 @@ foreach (var skin in ReorderedSkins) {
                 TryCatchThrow("Renderer Infos", () =>
                 {
 <# if (skin.rendererInfos.Count == 0) { #>
-                    skin.rendererInfos = Array.Empty<CharacterModel.RendererInfo>();
+                    skinParams.rendererInfos = Array.Empty<CharacterModel.RendererInfo>();
 <# } else { #>
-                    skin.rendererInfos = new CharacterModel.RendererInfo[]
+                    skinParams.rendererInfos = new CharacterModel.RendererInfo[]
                     {
 <# foreach (var rendererInfo in skin.rendererInfos) { #>
                         new CharacterModel.RendererInfo
@@ -290,10 +269,10 @@ foreach (var skin in ReorderedSkins) {
 <# } #>
                             defaultShadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.<#= Enum.GetName(typeof(ShadowCastingMode), rendererInfo.defaultShadowCastingMode) #>,
                             ignoreOverlays = <#= rendererInfo.ignoreOverlays.ToLiteral() #>,
-<# if (rendererInfo.rendererReference.accessType == AccessType.ByIndex) { #>
-                            renderer = renderers[<#= rendererInfo.rendererReference.index #>]
-<# } else { #>
+<# if (rendererInfo.rendererReference.accessType == ComponentAccessType.ByName) { #>
                             renderer = renderers.First(r => r.name == "<#= rendererInfo.rendererReference.name #>")
+<# } else if (rendererInfo.rendererReference.accessType == ComponentAccessType.ByPath) { #>
+                            renderer = mdl.transform.Find("<#= rendererInfo.rendererReference.path #>").GetComponent<Renderer>(),
 <# } #>
                         },
 <# } #>
@@ -303,22 +282,43 @@ foreach (var skin in ReorderedSkins) {
                 TryCatchThrow("Mesh Replacements", () =>
                 {
 <# if (skin.meshReplacements.Count == 0) { #>
-                    skin.meshReplacements = Array.Empty<SkinDef.MeshReplacement>();
+                    skinParams.meshReplacements = Array.Empty<SkinDefParams.MeshReplacement>();
 <# } else { #>
-                    skin.meshReplacements = new SkinDef.MeshReplacement[]
+                    skinParams.meshReplacements = new SkinDefParams.MeshReplacement[]
                     {
 <# foreach (var replacement in skin.meshReplacements) { #>
-                        new SkinDef.MeshReplacement
+                        new SkinDefParams.MeshReplacement
                         {
 <# if (replacement.mesh == null) { #>
                             mesh = null,
 <# } else { #>
                             mesh = assetBundle.LoadAsset<Mesh>(@"<#= AssetsInfo.meshPaths[replacement.mesh] #>"),
 <# } 
-if (replacement.rendererReference.accessType == AccessType.ByIndex) { #>
-                            renderer = renderers[<#= replacement.rendererReference.index #>]
-<# } else { #>
+if (replacement.rendererReference.accessType == ComponentAccessType.ByName) { #>
                             renderer = renderers.First(r => r.name == "<#= replacement.rendererReference.name #>")
+<# } else if (replacement.rendererReference.accessType == ComponentAccessType.ByPath) { #>
+                            renderer = mdl.transform.Find("<#= replacement.rendererReference.path #>").GetComponent<Renderer>(),
+<# } #>
+                        },
+<# } #>
+                    };
+<# } #>
+                });
+                TryCatchThrow("Light Infos", () =>
+                {
+<# if (skin.meshReplacements.Count == 0) { #>
+                    skinParams.lightReplacements = Array.Empty<CharacterModel.LightInfo>();
+<# } else { #>
+                    skinParams.lightReplacements = new CharacterModel.LightInfo[]
+                    {
+<# foreach (var replacement in skin.lightReplacements) { #>
+                        new CharacterModel.LightInfo
+                        {
+                            defaultColor = <#= replacement.defaultColor #>,
+<# if (replacement.lightReference.accessType == ComponentAccessType.ByName) { #>
+                            light = lights.First(l => l.name == "<#= replacement.lightReference.name #>")
+<# } else if (replacement.lightReference.accessType == ComponentAccessType.ByPath) { #>
+                            light = mdl.transform.Find("<#= replacement.lightReference.path #>").GetComponent<Light>(),
 <# } #>
                         },
 <# } #>
@@ -328,15 +328,15 @@ if (replacement.rendererReference.accessType == AccessType.ByIndex) { #>
                 TryCatchThrow("Minion Skin Replacements", () =>
                 {
 <# if (skin.minionSkinReplacements.Count == 0) { #>
-                    skin.minionSkinReplacements = Array.Empty<SkinDef.MinionSkinReplacement>();
+                    skinParams.minionSkinReplacements = Array.Empty<SkinDefParams.MinionSkinReplacement>();
 <# } else { #>
-                    skin.minionSkinReplacements = new SkinDef.MinionSkinReplacement[]
+                    skinParams.minionSkinReplacements = new SkinDefParams.MinionSkinReplacement[]
                     {
 <# foreach (var replacement in skin.minionSkinReplacements) {
     if (!replacement.findSkinByReference && replacement.skin == null) {
         continue;
     } #>
-                        new SkinDef.MinionSkinReplacement
+                        new SkinDefParams.MinionSkinReplacement
                         {
                             minionBodyPrefab = BodyCatalog.FindBodyPrefab(@"<#= replacement.bodyName #>"),
 <# if (replacement.findSkinByReference) { 
@@ -355,19 +355,22 @@ if (replacement.rendererReference.accessType == AccessType.ByIndex) { #>
                 });
                 TryCatchThrow("Projectile Ghost Replacements", () =>
                 {
+<# foreach (var path in AssetsInfo.uniqueProjectileGhosts.Values) { #>
+                    TryAddComponent<ProjectileGhostController>(assetBundle.LoadAsset<GameObject>(@"<#= path #>"));
+<# } #>
 <# if (skin.projectileGhostReplacements.Count == 0) { #>
-                    skin.projectileGhostReplacements = Array.Empty<SkinDef.ProjectileGhostReplacement>();
+                    skinParams.projectileGhostReplacements = Array.Empty<SkinDefParams.ProjectileGhostReplacement>();
 <# } else { #>
-                    skin.projectileGhostReplacements = new SkinDef.ProjectileGhostReplacement[]
+                    skinParams.projectileGhostReplacements = new SkinDefParams.ProjectileGhostReplacement[]
                     {
 <# foreach (var replacement in skin.projectileGhostReplacements) { #>
-                        new SkinDef.ProjectileGhostReplacement
+                        new SkinDefParams.ProjectileGhostReplacement
                         {
                             projectilePrefab = Addressables.LoadAssetAsync<GameObject>(@"<#= replacement.projectilePath #>").WaitForCompletion(),
-<# if (replacement.useResourcesPath) { #>
+<# if (replacement.useAddressablesPath) { #>
                             projectileGhostReplacementPrefab = Addressables.LoadAssetAsync<GameObject>(@"<#= replacement.projectileGhostPath #>".WaitForCompletion())
 <# } else { #>
-                            projectileGhostReplacementPrefab = assetBundle.LoadAsset<GameObject>(@"<#= AssetsInfo.gameObjectPaths[replacement.projectileGhost] #>")
+                            projectileGhostReplacementPrefab = assetBundle.LoadAsset<GameObject>(@"<#= AssetsInfo.uniqueProjectileGhosts[replacement.projectileGhost] #>")
 <# } #>
                         },
 <# } #>
@@ -378,7 +381,6 @@ if (replacement.rendererReference.accessType == AccessType.ByIndex) { #>
                 Array.Resize(ref skinController.skins, skinController.skins.Length + 1);
                 skinController.skins[skinController.skins.Length - 1] = skin;
 
-                BodyCatalog.skins[(int)BodyCatalog.FindBodyIndex(bodyPrefab)] = skinController.skins;
                 <#= skin.bodyName.ToUpperCamelCase() #><#= skin.name.ToUpperCamelCase() #>SkinAdded(skin, bodyPrefab);
             }
             catch (FieldException e)
@@ -404,6 +406,14 @@ if (replacement.rendererReference.accessType == AccessType.ByIndex) { #>
             catch (Exception e)
             {
                 throw new FieldException(message, e);
+            }
+        }
+        
+        private static void TryAddComponent<T>(GameObject obj) where T : Component
+        {
+            if (!obj.GetComponent<T>())
+            {
+                obj.AddComponent<T>();
             }
         }
 

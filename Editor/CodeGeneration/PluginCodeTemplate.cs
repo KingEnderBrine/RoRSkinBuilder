@@ -39,6 +39,7 @@ using System.Security.Permissions;
 using MonoMod.RuntimeDetour.HookGen;
 using RoR2.ContentManagement;
 using UnityEngine.AddressableAssets;
+using RoR2.Projectile;
 
 
 #pragma warning disable CS0618 // Type or member is obsolete
@@ -148,7 +149,7 @@ foreach (var skin in ReorderedSkins) {
             this.Write("            self.SetStringByToken(\"");
             this.Write(this.ToStringHelper.ToStringWithCulture(row.Key));
             this.Write("\", \"");
-            this.Write(this.ToStringHelper.ToStringWithCulture(row.Value));
+            this.Write(this.ToStringHelper.ToStringWithCulture(row.Value.Escape()));
             this.Write("\");\r\n");
  } 
  if (tokensByLanguage.Count > 0) { 
@@ -161,36 +162,22 @@ foreach (var skin in ReorderedSkins) {
             this.Write("                    self.SetStringByToken(\"");
             this.Write(this.ToStringHelper.ToStringWithCulture(value.Key));
             this.Write("\", \"");
-            this.Write(this.ToStringHelper.ToStringWithCulture(value.Value));
+            this.Write(this.ToStringHelper.ToStringWithCulture(value.Value.Escape()));
             this.Write("\");\r\n");
          } 
             this.Write("                    break;\r\n");
      } 
             this.Write("            }\r\n");
  } 
-            this.Write(@"        }
-
-        private static void Nothing(Action<SkinDef> orig, SkinDef self)
-        {
-
-        }
-
-        private static void BodyCatalogInit()
-        {
-            BeforeBodyCatalogInit();
-
-            var awake = typeof(SkinDef).GetMethod(nameof(SkinDef.Awake), BindingFlags.NonPublic | BindingFlags.Instance);
-            HookEndpointManager.Add(awake, (Action<Action<SkinDef>, SkinDef>)Nothing);
-
-");
+            this.Write("        }\r\n\r\n        private static void BodyCatalogInit()\r\n        {\r\n          " +
+                    "  BeforeBodyCatalogInit();\r\n\r\n");
  foreach (var skin in ReorderedSkins) { 
             this.Write("            Add");
             this.Write(this.ToStringHelper.ToStringWithCulture(skin.bodyName.ToUpperCamelCase()));
             this.Write(this.ToStringHelper.ToStringWithCulture(skin.name.ToUpperCamelCase()));
             this.Write("Skin();\r\n");
  } 
-            this.Write("            \r\n            HookEndpointManager.Remove(awake, (Action<Action<SkinDe" +
-                    "f>, SkinDef>)Nothing);\r\n\r\n            AfterBodyCatalogInit();\r\n        }\r\n");
+            this.Write("\r\n            AfterBodyCatalogInit();\r\n        }\r\n");
  foreach (var skin in ReorderedSkins) { 
             this.Write("\r\n        static partial void ");
             this.Write(this.ToStringHelper.ToStringWithCulture(skin.bodyName.ToUpperCamelCase()));
@@ -216,50 +203,26 @@ foreach (var skin in ReorderedSkins) {
             this.Write(this.ToStringHelper.ToStringWithCulture(skin.bodyName));
             this.Write("\";\r\n            var skinName = \"");
             this.Write(this.ToStringHelper.ToStringWithCulture(skin.name));
-            this.Write(@""";
-            try
-            {
-                var bodyPrefab = BodyCatalog.FindBodyPrefab(bodyName);
-                if (!bodyPrefab)
-                {
-                    InstanceLogger.LogWarning($""Failed to add \""{skinName}\"" skin because \""{bodyName}\"" doesn't exist"");
-                    return;
-                }
-
-                var modelLocator = bodyPrefab.GetComponent<ModelLocator>();
-                if (!modelLocator)
-                {
-                    InstanceLogger.LogWarning($""Failed to add \""{skinName}\"" skin to \""{bodyName}\"" because it doesn't have \""ModelLocator\"" component"");
-                    return;
-                }
-
-                var mdl = modelLocator.modelTransform.gameObject;
-                var skinController = mdl ? mdl.GetComponent<ModelSkinController>() : null;
-                if (!skinController)
-                {
-                    InstanceLogger.LogWarning($""Failed to add \""{skinName}\"" skin to \""{bodyName}\"" because it doesn't have \""ModelSkinController\"" component"");
-                    return;
-                }
-
-");
- switch (skin.renderersSource)
-{
-    case RenderersSource.AllRendererComponents: 
-            this.Write("                var renderers = mdl.GetComponentsInChildren<Renderer>(true);\r\n");
-      break;
-    case RenderersSource.BaseRendererInfos: 
-            this.Write(@"                var characterModel = mdl.GetComponent<CharacterModel>();
-                if (!characterModel)
-                {
-                    InstanceLogger.LogWarning($""Failed to add \""{skinName}\"" skin to \""{bodyName}\"" because it doesn't have \""CharacterModel\"" component"");
-                    return;
-                }
-                var renderers = characterModel.baseRendererInfos.Select(info => info.renderer).ToArray();
-");
-      break;
-} 
-            this.Write("\r\n                var skin = ScriptableObject.CreateInstance<SkinDef>();\r\n       " +
-                    "         TryCatchThrow(\"Icon\", () =>\r\n                {\r\n");
+            this.Write("\";\r\n            try\r\n            {\r\n                var bodyPrefab = BodyCatalog." +
+                    "FindBodyPrefab(bodyName);\r\n                if (!bodyPrefab)\r\n                {\r\n" +
+                    "                    InstanceLogger.LogWarning($\"Failed to add \\\"{skinName}\\\" ski" +
+                    "n because \\\"{bodyName}\\\" doesn\'t exist\");\r\n                    return;\r\n        " +
+                    "        }\r\n\r\n                var modelLocator = bodyPrefab.GetComponent<ModelLoc" +
+                    "ator>();\r\n                if (!modelLocator)\r\n                {\r\n               " +
+                    "     InstanceLogger.LogWarning($\"Failed to add \\\"{skinName}\\\" skin to \\\"{bodyNam" +
+                    "e}\\\" because it doesn\'t have \\\"ModelLocator\\\" component\");\r\n                    " +
+                    "return;\r\n                }\r\n\r\n                var mdl = modelLocator.modelTransf" +
+                    "orm.gameObject;\r\n                var skinController = mdl ? mdl.GetComponent<Mod" +
+                    "elSkinController>() : null;\r\n                if (!skinController)\r\n             " +
+                    "   {\r\n                    InstanceLogger.LogWarning($\"Failed to add \\\"{skinName}" +
+                    "\\\" skin to \\\"{bodyName}\\\" because it doesn\'t have \\\"ModelSkinController\\\" compon" +
+                    "ent\");\r\n                    return;\r\n                }\r\n\r\n                var re" +
+                    "nderers = mdl.GetComponentsInChildren<Renderer>(true);\r\n                var ligh" +
+                    "ts = mdl.GetComponentsInChildren<Light>(true);\r\n\r\n                var skin = Scr" +
+                    "iptableObject.CreateInstance<SkinDef>();\r\n                var skinParams = Scrip" +
+                    "tableObject.CreateInstance<SkinDefParams>();\r\n                skin.skinDefParams" +
+                    " = skinParams;\r\n\r\n                TryCatchThrow(\"Icon\", () =>\r\n                {" +
+                    "\r\n");
  if (!skin.icon.createFromColors) {
         if (skin.icon.sprite) { 
             this.Write("                    skin.icon = assetBundle.LoadAsset<Sprite>(@\"");
@@ -308,19 +271,15 @@ foreach (var skin in ReorderedSkins) {
             this.Write("                });\r\n                TryCatchThrow(\"Game Object Activations\", () " +
                     "=>\r\n                {\r\n");
  if (skin.gameObjectActivations.Count == 0) { 
-            this.Write("                    skin.gameObjectActivations = Array.Empty<SkinDef.GameObjectAc" +
-                    "tivation>();\r\n");
+            this.Write("                    skinParams.gameObjectActivations = Array.Empty<SkinDefParams." +
+                    "GameObjectActivation>();\r\n");
  } else { 
-            this.Write("                    skin.gameObjectActivations = new SkinDef.GameObjectActivation" +
-                    "[]\r\n                    {\r\n");
+            this.Write("                    skinParams.gameObjectActivations = new SkinDefParams.GameObje" +
+                    "ctActivation[]\r\n                    {\r\n");
  foreach (var activation in skin.gameObjectActivations) { 
-            this.Write("                        new SkinDef.GameObjectActivation\r\n                       " +
-                    " {\r\n");
- if (activation.accessType == GameObjectActivationAccessType.ByRendererIndex) { 
-            this.Write("                            gameObject = renderers[");
-            this.Write(this.ToStringHelper.ToStringWithCulture(activation.rendererIndex));
-            this.Write("].gameObject,\r\n");
- } else if (activation.accessType == GameObjectActivationAccessType.ByRendererName) { 
+            this.Write("                        new SkinDefParams.GameObjectActivation\r\n                 " +
+                    "       {\r\n");
+ if (activation.accessType == GameObjectActivationAccessType.ByRendererName) { 
             this.Write("                            gameObject = renderers.First(r => r.name == \"");
             this.Write(this.ToStringHelper.ToStringWithCulture(activation.rendererName));
             this.Write("\").gameObject,\r\n");
@@ -338,11 +297,11 @@ foreach (var skin in ReorderedSkins) {
             this.Write("                });\r\n                TryCatchThrow(\"Renderer Infos\", () =>\r\n     " +
                     "           {\r\n");
  if (skin.rendererInfos.Count == 0) { 
-            this.Write("                    skin.rendererInfos = Array.Empty<CharacterModel.RendererInfo>" +
-                    "();\r\n");
+            this.Write("                    skinParams.rendererInfos = Array.Empty<CharacterModel.Rendere" +
+                    "rInfo>();\r\n");
  } else { 
-            this.Write("                    skin.rendererInfos = new CharacterModel.RendererInfo[]\r\n     " +
-                    "               {\r\n");
+            this.Write("                    skinParams.rendererInfos = new CharacterModel.RendererInfo[]\r" +
+                    "\n                    {\r\n");
  foreach (var rendererInfo in skin.rendererInfos) { 
             this.Write("                        new CharacterModel.RendererInfo\r\n                        " +
                     "{\r\n");
@@ -359,14 +318,14 @@ foreach (var skin in ReorderedSkins) {
             this.Write(",\r\n                            ignoreOverlays = ");
             this.Write(this.ToStringHelper.ToStringWithCulture(rendererInfo.ignoreOverlays.ToLiteral()));
             this.Write(",\r\n");
- if (rendererInfo.rendererReference.accessType == AccessType.ByIndex) { 
-            this.Write("                            renderer = renderers[");
-            this.Write(this.ToStringHelper.ToStringWithCulture(rendererInfo.rendererReference.index));
-            this.Write("]\r\n");
- } else { 
+ if (rendererInfo.rendererReference.accessType == ComponentAccessType.ByName) { 
             this.Write("                            renderer = renderers.First(r => r.name == \"");
             this.Write(this.ToStringHelper.ToStringWithCulture(rendererInfo.rendererReference.name));
             this.Write("\")\r\n");
+ } else if (rendererInfo.rendererReference.accessType == ComponentAccessType.ByPath) { 
+            this.Write("                            renderer = mdl.transform.Find(\"");
+            this.Write(this.ToStringHelper.ToStringWithCulture(rendererInfo.rendererReference.path));
+            this.Write("\").GetComponent<Renderer>(),\r\n");
  } 
             this.Write("                        },\r\n");
  } 
@@ -375,13 +334,14 @@ foreach (var skin in ReorderedSkins) {
             this.Write("                });\r\n                TryCatchThrow(\"Mesh Replacements\", () =>\r\n  " +
                     "              {\r\n");
  if (skin.meshReplacements.Count == 0) { 
-            this.Write("                    skin.meshReplacements = Array.Empty<SkinDef.MeshReplacement>(" +
-                    ");\r\n");
+            this.Write("                    skinParams.meshReplacements = Array.Empty<SkinDefParams.MeshR" +
+                    "eplacement>();\r\n");
  } else { 
-            this.Write("                    skin.meshReplacements = new SkinDef.MeshReplacement[]\r\n      " +
-                    "              {\r\n");
+            this.Write("                    skinParams.meshReplacements = new SkinDefParams.MeshReplaceme" +
+                    "nt[]\r\n                    {\r\n");
  foreach (var replacement in skin.meshReplacements) { 
-            this.Write("                        new SkinDef.MeshReplacement\r\n                        {\r\n");
+            this.Write("                        new SkinDefParams.MeshReplacement\r\n                      " +
+                    "  {\r\n");
  if (replacement.mesh == null) { 
             this.Write("                            mesh = null,\r\n");
  } else { 
@@ -389,14 +349,40 @@ foreach (var skin in ReorderedSkins) {
             this.Write(this.ToStringHelper.ToStringWithCulture(AssetsInfo.meshPaths[replacement.mesh]));
             this.Write("\"),\r\n");
  } 
-if (replacement.rendererReference.accessType == AccessType.ByIndex) { 
-            this.Write("                            renderer = renderers[");
-            this.Write(this.ToStringHelper.ToStringWithCulture(replacement.rendererReference.index));
-            this.Write("]\r\n");
- } else { 
+if (replacement.rendererReference.accessType == ComponentAccessType.ByName) { 
             this.Write("                            renderer = renderers.First(r => r.name == \"");
             this.Write(this.ToStringHelper.ToStringWithCulture(replacement.rendererReference.name));
             this.Write("\")\r\n");
+ } else if (replacement.rendererReference.accessType == ComponentAccessType.ByPath) { 
+            this.Write("                            renderer = mdl.transform.Find(\"");
+            this.Write(this.ToStringHelper.ToStringWithCulture(replacement.rendererReference.path));
+            this.Write("\").GetComponent<Renderer>(),\r\n");
+ } 
+            this.Write("                        },\r\n");
+ } 
+            this.Write("                    };\r\n");
+ } 
+            this.Write("                });\r\n                TryCatchThrow(\"Light Infos\", () =>\r\n        " +
+                    "        {\r\n");
+ if (skin.meshReplacements.Count == 0) { 
+            this.Write("                    skinParams.lightReplacements = Array.Empty<CharacterModel.Lig" +
+                    "htInfo>();\r\n");
+ } else { 
+            this.Write("                    skinParams.lightReplacements = new CharacterModel.LightInfo[]" +
+                    "\r\n                    {\r\n");
+ foreach (var replacement in skin.lightReplacements) { 
+            this.Write("                        new CharacterModel.LightInfo\r\n                        {\r\n" +
+                    "                            defaultColor = ");
+            this.Write(this.ToStringHelper.ToStringWithCulture(replacement.defaultColor));
+            this.Write(",\r\n");
+ if (replacement.lightReference.accessType == ComponentAccessType.ByName) { 
+            this.Write("                            light = lights.First(l => l.name == \"");
+            this.Write(this.ToStringHelper.ToStringWithCulture(replacement.lightReference.name));
+            this.Write("\")\r\n");
+ } else if (replacement.lightReference.accessType == ComponentAccessType.ByPath) { 
+            this.Write("                            light = mdl.transform.Find(\"");
+            this.Write(this.ToStringHelper.ToStringWithCulture(replacement.lightReference.path));
+            this.Write("\").GetComponent<Light>(),\r\n");
  } 
             this.Write("                        },\r\n");
  } 
@@ -405,18 +391,18 @@ if (replacement.rendererReference.accessType == AccessType.ByIndex) {
             this.Write("                });\r\n                TryCatchThrow(\"Minion Skin Replacements\", ()" +
                     " =>\r\n                {\r\n");
  if (skin.minionSkinReplacements.Count == 0) { 
-            this.Write("                    skin.minionSkinReplacements = Array.Empty<SkinDef.MinionSkinR" +
-                    "eplacement>();\r\n");
+            this.Write("                    skinParams.minionSkinReplacements = Array.Empty<SkinDefParams" +
+                    ".MinionSkinReplacement>();\r\n");
  } else { 
-            this.Write("                    skin.minionSkinReplacements = new SkinDef.MinionSkinReplaceme" +
-                    "nt[]\r\n                    {\r\n");
+            this.Write("                    skinParams.minionSkinReplacements = new SkinDefParams.MinionS" +
+                    "kinReplacement[]\r\n                    {\r\n");
  foreach (var replacement in skin.minionSkinReplacements) {
     if (!replacement.findSkinByReference && replacement.skin == null) {
         continue;
     } 
-            this.Write("                        new SkinDef.MinionSkinReplacement\r\n                      " +
-                    "  {\r\n                            minionBodyPrefab = BodyCatalog.FindBodyPrefab(@" +
-                    "\"");
+            this.Write("                        new SkinDefParams.MinionSkinReplacement\r\n                " +
+                    "        {\r\n                            minionBodyPrefab = BodyCatalog.FindBodyPr" +
+                    "efab(@\"");
             this.Write(this.ToStringHelper.ToStringWithCulture(replacement.bodyName));
             this.Write("\"),\r\n");
  if (replacement.findSkinByReference) { 
@@ -449,19 +435,25 @@ if (replacement.rendererReference.accessType == AccessType.ByIndex) {
  } 
             this.Write("                });\r\n                TryCatchThrow(\"Projectile Ghost Replacements" +
                     "\", () =>\r\n                {\r\n");
+ foreach (var path in AssetsInfo.uniqueProjectileGhosts.Values) { 
+            this.Write("                    TryAddComponent<ProjectileGhostController>(assetBundle.LoadAs" +
+                    "set<GameObject>(@\"");
+            this.Write(this.ToStringHelper.ToStringWithCulture(path));
+            this.Write("\"));\r\n");
+ } 
  if (skin.projectileGhostReplacements.Count == 0) { 
-            this.Write("                    skin.projectileGhostReplacements = Array.Empty<SkinDef.Projec" +
-                    "tileGhostReplacement>();\r\n");
+            this.Write("                    skinParams.projectileGhostReplacements = Array.Empty<SkinDefP" +
+                    "arams.ProjectileGhostReplacement>();\r\n");
  } else { 
-            this.Write("                    skin.projectileGhostReplacements = new SkinDef.ProjectileGhos" +
-                    "tReplacement[]\r\n                    {\r\n");
+            this.Write("                    skinParams.projectileGhostReplacements = new SkinDefParams.Pr" +
+                    "ojectileGhostReplacement[]\r\n                    {\r\n");
  foreach (var replacement in skin.projectileGhostReplacements) { 
-            this.Write("                        new SkinDef.ProjectileGhostReplacement\r\n                 " +
-                    "       {\r\n                            projectilePrefab = Addressables.LoadAssetA" +
-                    "sync<GameObject>(@\"");
+            this.Write("                        new SkinDefParams.ProjectileGhostReplacement\r\n           " +
+                    "             {\r\n                            projectilePrefab = Addressables.Load" +
+                    "AssetAsync<GameObject>(@\"");
             this.Write(this.ToStringHelper.ToStringWithCulture(replacement.projectilePath));
             this.Write("\").WaitForCompletion(),\r\n");
- if (replacement.useResourcesPath) { 
+ if (replacement.useAddressablesPath) { 
             this.Write("                            projectileGhostReplacementPrefab = Addressables.LoadA" +
                     "ssetAsync<GameObject>(@\"");
             this.Write(this.ToStringHelper.ToStringWithCulture(replacement.projectileGhostPath));
@@ -469,20 +461,16 @@ if (replacement.rendererReference.accessType == AccessType.ByIndex) {
  } else { 
             this.Write("                            projectileGhostReplacementPrefab = assetBundle.LoadAs" +
                     "set<GameObject>(@\"");
-            this.Write(this.ToStringHelper.ToStringWithCulture(AssetsInfo.gameObjectPaths[replacement.projectileGhost]));
+            this.Write(this.ToStringHelper.ToStringWithCulture(AssetsInfo.uniqueProjectileGhosts[replacement.projectileGhost]));
             this.Write("\")\r\n");
  } 
             this.Write("                        },\r\n");
  } 
             this.Write("                    };\r\n");
  } 
-            this.Write(@"                });
-
-                Array.Resize(ref skinController.skins, skinController.skins.Length + 1);
-                skinController.skins[skinController.skins.Length - 1] = skin;
-
-                BodyCatalog.skins[(int)BodyCatalog.FindBodyIndex(bodyPrefab)] = skinController.skins;
-                ");
+            this.Write("                });\r\n\r\n                Array.Resize(ref skinController.skins, ski" +
+                    "nController.skins.Length + 1);\r\n                skinController.skins[skinControl" +
+                    "ler.skins.Length - 1] = skin;\r\n\r\n                ");
             this.Write(this.ToStringHelper.ToStringWithCulture(skin.bodyName.ToUpperCamelCase()));
             this.Write(this.ToStringHelper.ToStringWithCulture(skin.name.ToUpperCamelCase()));
             this.Write(@"SkinAdded(skin, bodyPrefab);
@@ -511,6 +499,14 @@ if (replacement.rendererReference.accessType == AccessType.ByIndex) {
             catch (Exception e)
             {
                 throw new FieldException(message, e);
+            }
+        }
+        
+        private static void TryAddComponent<T>(GameObject obj) where T : Component
+        {
+            if (!obj.GetComponent<T>())
+            {
+                obj.AddComponent<T>();
             }
         }
 

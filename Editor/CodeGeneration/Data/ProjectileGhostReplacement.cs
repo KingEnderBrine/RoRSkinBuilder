@@ -1,6 +1,7 @@
 ﻿using RoRSkinBuilder.CustomEditors;
 using System;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace RoRSkinBuilder.Data
 {
@@ -10,12 +11,13 @@ namespace RoRSkinBuilder.Data
         [Tooltip("Path to the projectile GameObject")]
         public string projectilePath;
         [Tooltip("Load projectile ghost that exists in the game files")]
-        public bool useResourcesPath;
+        [FormerlySerializedAs("useResourcesPath")]
+        public bool useAddressablesPath;
         [Tooltip("New projectile ghost")]
-        [ShowWhen(nameof(useResourcesPath), false, false)]
+        [ShowWhen(nameof(useAddressablesPath), false, false)]
         public GameObject projectileGhost;
         [Tooltip("Path to the projectile ghost")]
-        [ShowWhen(nameof(useResourcesPath), false, true)]
+        [ShowWhen(nameof(useAddressablesPath), false, true)]
         public string projectileGhostPath;
 
         [HideInInspector]

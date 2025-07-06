@@ -9,6 +9,6 @@ namespace RoRSkinBuilder.Data
         [Tooltip("A new model")]
         public Mesh mesh;
         [Tooltip("The old model that needs to be replaced")]
-        public Reference rendererReference;
+        public ComponentReference rendererReference;
     }
 }

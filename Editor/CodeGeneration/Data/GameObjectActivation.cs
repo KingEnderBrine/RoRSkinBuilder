@@ -7,9 +7,7 @@ namespace RoRSkinBuilder.Data
     [Serializable]
     public class GameObjectActivation
     {
-        public GameObjectActivationAccessType accessType;
-        [ShowWhen(nameof(accessType), false, GameObjectActivationAccessType.ByRendererIndex)]
-        public int rendererIndex;
+        public GameObjectActivationAccessType accessType = GameObjectActivationAccessType.ByRendererName;
         [ShowWhen(nameof(accessType), false, GameObjectActivationAccessType.ByRendererName)]
         public string rendererName;
         [ShowWhen(nameof(accessType), false, GameObjectActivationAccessType.ByPath)]

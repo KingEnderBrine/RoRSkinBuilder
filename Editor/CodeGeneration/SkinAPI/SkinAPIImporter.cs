@@ -143,9 +143,9 @@ namespace RoRSkinBuilder.SkinAPI
                         defaultMaterial = material,
                         defaultShadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On,
                         ignoreOverlays = false,
-                        rendererReference = new Reference
+                        rendererReference = new ComponentReference
                         {
-                            accessType = AccessType.ByName,
+                            accessType = ComponentAccessType.ByName,
                             name = Path.GetFileName(materialDirectory)
                         }
                     });

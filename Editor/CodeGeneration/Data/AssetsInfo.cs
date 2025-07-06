@@ -23,7 +23,7 @@ namespace RoRSkinBuilder.Data
         public readonly Dictionary<IconColors, string> iconFromColorPaths = new Dictionary<IconColors, string>();
         public readonly Dictionary<Material, string> materialPaths = new Dictionary<Material, string>();
         public readonly Dictionary<Mesh, string> meshPaths = new Dictionary<Mesh, string>();
-        public readonly Dictionary<GameObject, string> gameObjectPaths = new Dictionary<GameObject, string>();
+        public readonly Dictionary<GameObject, string> uniqueProjectileGhosts = new Dictionary<GameObject, string>();
         public readonly Dictionary<string, HashSet<Material>> materialsWithRoRShader = new Dictionary<string, HashSet<Material>>();
 
         public AssetsInfo(SkinModInfo skinModInfo)
@@ -106,7 +106,10 @@ namespace RoRSkinBuilder.Data
 
                 foreach (var projectileGhostReplacement in skin.projectileGhostReplacements)
                 {
-                    gameObjectPaths[projectileGhostReplacement.projectileGhost] = AssetDatabase.GetAssetPath(projectileGhostReplacement.projectileGhost);
+                    if (!projectileGhostReplacement.useAddressablesPath)
+                    {
+                        uniqueProjectileGhosts[projectileGhostReplacement.projectileGhost] = AssetDatabase.GetAssetPath(projectileGhostReplacement.projectileGhost);
+                    }
                 }
             }
 
@@ -137,6 +140,7 @@ namespace RoRSkinBuilder.Data
             assetNames.AddRange(iconPaths.Values);
             assetNames.AddRange(meshPaths.Values);
             assetNames.AddRange(iconFromColorPaths.Values);
+            assetNames.AddRange(uniqueProjectileGhosts.Values);
 
             foreach (var resource in skinModInfo.additionalResources)
             {

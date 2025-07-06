@@ -1,4 +1,5 @@
 ﻿using RoRSkinBuilder.CustomEditors;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -16,7 +17,7 @@ namespace RoRSkinBuilder.Data
         public List<TokenLocalization> nameTokenLocalizations;
         [Tooltip("Skin icon in lobby")]
         public IconInfo icon;
-        [Tooltip("Name of achievemnt after which skin will be available")]
+        [Tooltip("Name of achievement after which skin will be available")]
         public string unlockableName;
         [Tooltip("A list of skins that the game will apply before this one")]
         public List<Reference> baseSkins;
@@ -26,6 +27,8 @@ namespace RoRSkinBuilder.Data
 AllRendererComponents - get all renderers on a prefab (including particles and disabled ones)
 
 BaseRendererInfos - get renderers from `CharacterModel.baseRendererInfos` field")]
+        [HideInInspector]
+        [Obsolete("Will be ignored and all renderer components will be used")]
         public RenderersSource renderersSource;
         [Space]
         [Tooltip("Replacements for in-game models")]
@@ -38,10 +41,26 @@ BaseRendererInfos - get renderers from `CharacterModel.baseRendererInfos` field"
         public List<MinionSkinReplacement> minionSkinReplacements;
         [Tooltip("Replacement for projectiles")]
         public List<ProjectileGhostReplacement> projectileGhostReplacements;
+        [Tooltip("Colors for lights")]
+        public List<LightInfo> lightReplacements;
 
         public string CreateNameToken(string author)
         {
             return author.Trim().ToUpper().Replace(" ", "_") + "_SKIN_" + name.Trim().ToUpper().Replace(" ", "_") + "_NAME";
+        }
+
+        public void OnValidate()
+        {
+            if (gameObjectActivations != null)
+            {
+                foreach (var activation in gameObjectActivations)
+                {
+                    if (activation.accessType == 0)
+                    {
+                        activation.accessType = GameObjectActivationAccessType.ByRendererName;
+                    }
+                }
+            }
         }
     }
 }

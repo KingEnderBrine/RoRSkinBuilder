@@ -18,5 +18,10 @@ namespace RoRSkinBuilder
         {
             return value ? "true" : "false";
         }
+
+        public static string Escape(this string str)
+        {
+            return str.Replace(@"\", @"\\").Replace("\"", "\\\"");
+        }
     }
 }
