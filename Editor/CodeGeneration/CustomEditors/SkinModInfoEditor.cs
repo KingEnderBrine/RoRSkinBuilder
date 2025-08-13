@@ -51,15 +51,28 @@ namespace RoRSkinBuilder.CustomEditors
             }
             assetInfo.AddCsc();
 
-            AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceUpdate);
+            var noCompilation = true;
             CompilationPipeline.assemblyCompilationFinished += WaitForCompilation;
-            
+            CompilationPipeline.compilationFinished += WaitForCompilationAll;
+            AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceUpdate);
+
+            void WaitForCompilationAll(object obj)
+            {
+                CompilationPipeline.compilationFinished -= WaitForCompilationAll;
+                if (noCompilation)
+                {
+                    FinishBuild();
+                }
+            }
             void WaitForCompilation(string assemblyPath, CompilerMessage[] messages)
             {
+                noCompilation = false;
+
                 if (!assemblyPath.EndsWith(assetInfo.uccModName + ".dll"))
                 {
                     return;
                 }
+
                 CompilationPipeline.assemblyCompilationFinished -= WaitForCompilation;
                 if (messages.Length != 0)
                 {
@@ -72,6 +85,11 @@ namespace RoRSkinBuilder.CustomEditors
                     }
                 }
 
+                FinishBuild();
+            }
+
+            void FinishBuild()
+            {
                 var buildFolder = Path.Combine(Environment.CurrentDirectory, "Builds", assetInfo.uccModName);
                 Directory.CreateDirectory(buildFolder);
                 File.Copy(Path.Combine(Environment.CurrentDirectory, "Library", "ScriptAssemblies", assetInfo.uccModName + ".dll"), Path.Combine(buildFolder, assetInfo.uccModName + ".dll"), true);

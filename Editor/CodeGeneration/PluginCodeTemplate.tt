@@ -314,7 +314,7 @@ if (replacement.rendererReference.accessType == ComponentAccessType.ByName) { #>
 <# foreach (var replacement in skin.lightReplacements) { #>
                         new CharacterModel.LightInfo
                         {
-                            defaultColor = <#= replacement.defaultColor #>,
+                            defaultColor = <#= replacement.defaultColor.ToNewString() #>,
 <# if (replacement.lightReference.accessType == ComponentAccessType.ByName) { #>
                             light = lights.First(l => l.name == "<#= replacement.lightReference.name #>")
 <# } else if (replacement.lightReference.accessType == ComponentAccessType.ByPath) { #>
@@ -341,12 +341,12 @@ if (replacement.rendererReference.accessType == ComponentAccessType.ByName) { #>
                             minionBodyPrefab = BodyCatalog.FindBodyPrefab(@"<#= replacement.bodyName #>"),
 <# if (replacement.findSkinByReference) { 
     if (replacement.reference.accessType == AccessType.ByIndex) { #>
-                            minionSkin = BodyCatalog.GetBodySkins(BodyCatalog.FindBodyIndex(@"<#= replacement.bodyName #>"))[<#= replacement.reference.index #>]
+                            minionSkin = SkinCatalog.FindSkinsForBody(BodyCatalog.FindBodyIndex(@"<#= replacement.bodyName #>"))[<#= replacement.reference.index #>]
 <# } else { #>
-                            minionSkin = BodyCatalog.GetBodySkins(BodyCatalog.FindBodyIndex(@"<#= replacement.bodyName #>")).First(s => s.name == @"<#= replacement.reference.name #>")
+                            minionSkin = SkinCatalog.FindSkinsForBody(BodyCatalog.FindBodyIndex(@"<#= replacement.bodyName #>")).First(s => s.name == @"<#= replacement.reference.name #>")
     <# }
 } else { #>
-                            minionSkin = BodyCatalog.GetBodySkins(BodyCatalog.FindBodyIndex(@"<#= replacement.bodyName #>")).First(s => s.name == @"<#= replacement.skin.name #>")
+                            minionSkin = SkinCatalog.FindSkinsForBody(BodyCatalog.FindBodyIndex(@"<#= replacement.bodyName #>")).First(s => s.name == @"<#= replacement.skin.name #>")
 <# } #>
                         },
 <# } #>

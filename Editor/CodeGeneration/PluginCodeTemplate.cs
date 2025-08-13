@@ -373,7 +373,7 @@ if (replacement.rendererReference.accessType == ComponentAccessType.ByName) {
  foreach (var replacement in skin.lightReplacements) { 
             this.Write("                        new CharacterModel.LightInfo\r\n                        {\r\n" +
                     "                            defaultColor = ");
-            this.Write(this.ToStringHelper.ToStringWithCulture(replacement.defaultColor));
+            this.Write(this.ToStringHelper.ToStringWithCulture(replacement.defaultColor.ToNewString()));
             this.Write(",\r\n");
  if (replacement.lightReference.accessType == ComponentAccessType.ByName) { 
             this.Write("                            light = lights.First(l => l.name == \"");
@@ -407,23 +407,23 @@ if (replacement.rendererReference.accessType == ComponentAccessType.ByName) {
             this.Write("\"),\r\n");
  if (replacement.findSkinByReference) { 
     if (replacement.reference.accessType == AccessType.ByIndex) { 
-            this.Write("                            minionSkin = BodyCatalog.GetBodySkins(BodyCatalog.Fin" +
-                    "dBodyIndex(@\"");
+            this.Write("                            minionSkin = SkinCatalog.FindSkinsForBody(BodyCatalog" +
+                    ".FindBodyIndex(@\"");
             this.Write(this.ToStringHelper.ToStringWithCulture(replacement.bodyName));
             this.Write("\"))[");
             this.Write(this.ToStringHelper.ToStringWithCulture(replacement.reference.index));
             this.Write("]\r\n");
  } else { 
-            this.Write("                            minionSkin = BodyCatalog.GetBodySkins(BodyCatalog.Fin" +
-                    "dBodyIndex(@\"");
+            this.Write("                            minionSkin = SkinCatalog.FindSkinsForBody(BodyCatalog" +
+                    ".FindBodyIndex(@\"");
             this.Write(this.ToStringHelper.ToStringWithCulture(replacement.bodyName));
             this.Write("\")).First(s => s.name == @\"");
             this.Write(this.ToStringHelper.ToStringWithCulture(replacement.reference.name));
             this.Write("\")\r\n    ");
  }
 } else { 
-            this.Write("                            minionSkin = BodyCatalog.GetBodySkins(BodyCatalog.Fin" +
-                    "dBodyIndex(@\"");
+            this.Write("                            minionSkin = SkinCatalog.FindSkinsForBody(BodyCatalog" +
+                    ".FindBodyIndex(@\"");
             this.Write(this.ToStringHelper.ToStringWithCulture(replacement.bodyName));
             this.Write("\")).First(s => s.name == @\"");
             this.Write(this.ToStringHelper.ToStringWithCulture(replacement.skin.name));

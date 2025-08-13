@@ -1,4 +1,6 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Globalization;
+using System.Text.RegularExpressions;
+using UnityEngine;
 
 namespace RoRSkinBuilder
 {
@@ -22,6 +24,16 @@ namespace RoRSkinBuilder
         public static string Escape(this string str)
         {
             return str.Replace(@"\", @"\\").Replace("\"", "\\\"");
+        }
+
+        public static string ToLiteral(this float value)
+        {
+            return $"{value.ToString(CultureInfo.InvariantCulture)}f";
+        }
+
+        public static string ToNewString(this Color color)
+        {
+            return $"new Color({color.r.ToLiteral()}, {color.g.ToLiteral()}, {color.b.ToLiteral()}, {color.a.ToLiteral()})";
         }
     }
 }

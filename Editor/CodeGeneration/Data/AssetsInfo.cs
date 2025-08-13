@@ -187,7 +187,8 @@ namespace RoRSkinBuilder.Data
     ""precompiledReferences"": [
         ""RoR2-nstrip.dll"",
         ""BepInEx.dll"",
-        ""MonoMod.RuntimeDetour.dll""
+        ""MonoMod.RuntimeDetour.dll"",
+        ""HGCSharpUtils-nstrip.dll""
     ],
     ""autoReferenced"": false,
     ""defineConstraints"": [],
