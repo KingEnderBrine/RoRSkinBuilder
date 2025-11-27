@@ -4,7 +4,7 @@ using UnityEditor;
 
 namespace RoRSkinBuilder.CustomEditors
 {
-    [AttributeUsage(AttributeTargets.Field, AllowMultiple = false)]
+    [AttributeUsage(AttributeTargets.Field, AllowMultiple = true)]
     public class ShowWhenAttribute : Attribute
     {
         public readonly string propertyName;

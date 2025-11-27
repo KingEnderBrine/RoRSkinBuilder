@@ -20,5 +20,20 @@ namespace RoRSkinBuilder.CodeGeneration
 
             return dict[key] = defaultValueFunc();
         }
+
+        public static int AddRange<T>(this HashSet<T> set, IEnumerable<T> items)
+        {
+            var count = 0;
+
+            foreach (var item in items)
+            {
+                if (set.Add(item))
+                {
+                    count++;
+                }
+            }
+
+            return count;
+        }
     }
 }

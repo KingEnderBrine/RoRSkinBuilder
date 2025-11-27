@@ -35,5 +35,10 @@ namespace RoRSkinBuilder
         {
             return $"new Color({color.r.ToLiteral()}, {color.g.ToLiteral()}, {color.b.ToLiteral()}, {color.a.ToLiteral()})";
         }
+
+        public static string ToNewString(this Vector3 vector)
+        {
+            return $"new Vector3({vector.x.ToLiteral()}, {vector.y.ToLiteral()}, {vector.z.ToLiteral()})";
+        }
     }
 }

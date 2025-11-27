@@ -213,11 +213,12 @@ foreach (var skin in ReorderedSkins) {
 <# } else { #>
                     skin.baseSkins = new SkinDef[] 
                     { 
-<# foreach (var reference in skin.baseSkins) { 
+<# for (var i = 0; i < skin.baseSkins.Count; i++) {
+    var reference = skin.baseSkins[i];
     if (reference.accessType == AccessType.ByIndex) { #>
-                        skinController.skins[<#= reference.index #>],
+                        ThrowIfOutOfBounds(<#= i #>, "Index <#= reference.index #> is out of bounds of skins array", skinController.skins, <#= reference.index #>),
 <# } else { #>
-                        skinController.skins.First(s => s.Name == "<#= reference.name #>")
+                        ThrowIfNull(<#= i #>, "There is no skin with the name \"<#= reference.name #>\"", skinController.skins.FirstOrDefault(s => s.Name == "<#= reference.name #>")),
 <# } 
 } #>
                     };
@@ -238,15 +239,30 @@ foreach (var skin in ReorderedSkins) {
 <# } else { #>
                     skinParams.gameObjectActivations = new SkinDefParams.GameObjectActivation[]
                     {
-<# foreach (var activation in skin.gameObjectActivations) { #>
+<# for (var i = 0; i < skin.gameObjectActivations.Count; i++) {
+    var activation = skin.gameObjectActivations[i]; #>
                         new SkinDefParams.GameObjectActivation
                         {
 <# if (activation.accessType == GameObjectActivationAccessType.ByRendererName) { #>
-                            gameObject = renderers.First(r => r.name == "<#= activation.rendererName #>").gameObject,
+                            gameObject = ThrowIfNull(<#= i #>, "There is no renderer with the name \"<#= activation.rendererName #>\"", renderers.FirstOrDefault(r => r.name == "<#= activation.rendererName #>")).gameObject,
 <# } else if (activation.accessType == GameObjectActivationAccessType.ByPath) { #>
-                            gameObject = mdl.transform.Find("<#= activation.path #>").gameObject,
+                            gameObject = ThrowIfNull(<#= i #>, "There is no renderer at path \"<#= activation.path #>\"", mdl.transform.Find("<#= activation.path #>")).gameObject,
 <# } #>
-                            shouldActivate = <#= activation.shouldActivate.ToLiteral() #>
+<# if (activation.spawnPrefabOnModelObject) { #>
+                            shouldActivate = false,
+                            spawnPrefabOnModelObject = true,
+                            localPosition = <#= activation.localPosition.ToNewString() #>,
+                            localRotation = <#= activation.localRotation.ToNewString() #>,
+                            localScale = <#= activation.localScale.ToNewString() #>,
+<#      if (activation.useAddressablesKey) { #>
+                            prefab = Addressables.LoadAssetAsync<GameObject>(@"<#= activation.prefabKey #>").WaitForCompletion()
+<#      } else { #>
+                            prefab = assetBundle.LoadAsset<GameObject>(@"<#= AssetsInfo.uniqueGameObjectActivations[activation.prefab] #>")
+<#      } #>
+<# } else { #>
+                            shouldActivate = <#= activation.shouldActivate.ToLiteral() #>,
+                            spawnPrefabOnModelObject = false,
+<# } #>
                         },
 <# } #>
                     };
@@ -259,7 +275,8 @@ foreach (var skin in ReorderedSkins) {
 <# } else { #>
                     skinParams.rendererInfos = new CharacterModel.RendererInfo[]
                     {
-<# foreach (var rendererInfo in skin.rendererInfos) { #>
+<# for (var i = 0; i < skin.rendererInfos.Count; i++) {
+    var rendererInfo = skin.rendererInfos[i]; #>
                         new CharacterModel.RendererInfo
                         {
 <# if (rendererInfo.defaultMaterial == null) { #>
@@ -270,9 +287,9 @@ foreach (var skin in ReorderedSkins) {
                             defaultShadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.<#= Enum.GetName(typeof(ShadowCastingMode), rendererInfo.defaultShadowCastingMode) #>,
                             ignoreOverlays = <#= rendererInfo.ignoreOverlays.ToLiteral() #>,
 <# if (rendererInfo.rendererReference.accessType == ComponentAccessType.ByName) { #>
-                            renderer = renderers.First(r => r.name == "<#= rendererInfo.rendererReference.name #>")
+                            renderer = ThrowIfNull(<#= i #>, "There is no renderer with the name \"<#= rendererInfo.rendererReference.name #>\"", renderers.FirstOrDefault(r => r.name == "<#= rendererInfo.rendererReference.name #>")),
 <# } else if (rendererInfo.rendererReference.accessType == ComponentAccessType.ByPath) { #>
-                            renderer = mdl.transform.Find("<#= rendererInfo.rendererReference.path #>").GetComponent<Renderer>(),
+                            renderer = ThrowIfNull(<#= i #>, "There is no renderer at path \"<#= rendererInfo.rendererReference.path #>\"", mdl.transform.Find("<#= rendererInfo.rendererReference.path #>")).GetComponent<Renderer>(),
 <# } #>
                         },
 <# } #>
@@ -286,7 +303,8 @@ foreach (var skin in ReorderedSkins) {
 <# } else { #>
                     skinParams.meshReplacements = new SkinDefParams.MeshReplacement[]
                     {
-<# foreach (var replacement in skin.meshReplacements) { #>
+<# for (var i = 0; i < skin.meshReplacements.Count; i++) {
+    var replacement = skin.meshReplacements[i]; #>
                         new SkinDefParams.MeshReplacement
                         {
 <# if (replacement.mesh == null) { #>
@@ -295,9 +313,9 @@ foreach (var skin in ReorderedSkins) {
                             mesh = assetBundle.LoadAsset<Mesh>(@"<#= AssetsInfo.meshPaths[replacement.mesh] #>"),
 <# } 
 if (replacement.rendererReference.accessType == ComponentAccessType.ByName) { #>
-                            renderer = renderers.First(r => r.name == "<#= replacement.rendererReference.name #>")
+                            renderer = ThrowIfNull(<#= i #>, "There is no renderer with the name \"<#= replacement.rendererReference.name #>\"", renderers.FirstOrDefault(r => r.name == "<#= replacement.rendererReference.name #>")),
 <# } else if (replacement.rendererReference.accessType == ComponentAccessType.ByPath) { #>
-                            renderer = mdl.transform.Find("<#= replacement.rendererReference.path #>").GetComponent<Renderer>(),
+                            renderer = ThrowIfNull(<#= i #>, "There is no renderer at path \"<#= replacement.rendererReference.path #>\"", mdl.transform.Find("<#= replacement.rendererReference.path #>")).GetComponent<Renderer>(),
 <# } #>
                         },
 <# } #>
@@ -311,14 +329,15 @@ if (replacement.rendererReference.accessType == ComponentAccessType.ByName) { #>
 <# } else { #>
                     skinParams.lightReplacements = new CharacterModel.LightInfo[]
                     {
-<# foreach (var replacement in skin.lightReplacements) { #>
+<# for (var i = 0; i < skin.lightReplacements.Count; i++) {
+    var replacement = skin.lightReplacements[i]; #>
                         new CharacterModel.LightInfo
                         {
                             defaultColor = <#= replacement.defaultColor.ToNewString() #>,
 <# if (replacement.lightReference.accessType == ComponentAccessType.ByName) { #>
-                            light = lights.First(l => l.name == "<#= replacement.lightReference.name #>")
+                            light = ThrowIfNull(<#= i #>, "There is no light with the name \"<#= replacement.lightReference.name #>\"", lights.FirstOrDefault(l => l.name == "<#= replacement.lightReference.name #>")),
 <# } else if (replacement.lightReference.accessType == ComponentAccessType.ByPath) { #>
-                            light = mdl.transform.Find("<#= replacement.lightReference.path #>").GetComponent<Light>(),
+                            light = ThrowIfNull(<#= i #>, "There is no light at path \"<#= replacement.lightReference.path #>\"", mdl.transform.Find("<#= replacement.lightReference.path #>")).GetComponent<Light>(),
 <# } #>
                         },
 <# } #>
@@ -332,7 +351,8 @@ if (replacement.rendererReference.accessType == ComponentAccessType.ByName) { #>
 <# } else { #>
                     skinParams.minionSkinReplacements = new SkinDefParams.MinionSkinReplacement[]
                     {
-<# foreach (var replacement in skin.minionSkinReplacements) {
+<# for (var i = 0; i < skin.minionSkinReplacements.Count; i++) {
+    var replacement = skin.minionSkinReplacements[i];
     if (!replacement.findSkinByReference && replacement.skin == null) {
         continue;
     } #>
@@ -341,12 +361,12 @@ if (replacement.rendererReference.accessType == ComponentAccessType.ByName) { #>
                             minionBodyPrefab = BodyCatalog.FindBodyPrefab(@"<#= replacement.bodyName #>"),
 <# if (replacement.findSkinByReference) { 
     if (replacement.reference.accessType == AccessType.ByIndex) { #>
-                            minionSkin = SkinCatalog.FindSkinsForBody(BodyCatalog.FindBodyIndex(@"<#= replacement.bodyName #>"))[<#= replacement.reference.index #>]
+                            minionSkin = ThrowIfOutOfBounds(<#= i #>, "Index <#= replacement.reference.index #> is out of bounds of skins array for body \"<#= replacement.bodyName #>\"", SkinCatalog.FindSkinsForBody(ThrowIfEquals(<#= i #>, "Body \"<#= replacement.bodyName #>\" doesn't exist", BodyCatalog.FindBodyIndex(@"<#= replacement.bodyName #>"), BodyIndex.None)), <#= replacement.reference.index #>),
 <# } else { #>
-                            minionSkin = SkinCatalog.FindSkinsForBody(BodyCatalog.FindBodyIndex(@"<#= replacement.bodyName #>")).First(s => s.name == @"<#= replacement.reference.name #>")
+                            minionSkin = ThrowIfNull(<#= i #>, "There is no skin with the name \"<#= replacement.reference.name #>\" for body \"<#= replacement.bodyName #>\"", SkinCatalog.FindSkinsForBody(ThrowIfEquals(<#= i #>, "Body \"<#= replacement.bodyName #>\" doesn't exist", BodyCatalog.FindBodyIndex(@"<#= replacement.bodyName #>"), BodyIndex.None)).FirstOrDefault(s => s.name == @"<#= replacement.reference.name #>")),
     <# }
 } else { #>
-                            minionSkin = SkinCatalog.FindSkinsForBody(BodyCatalog.FindBodyIndex(@"<#= replacement.bodyName #>")).First(s => s.name == @"<#= replacement.skin.name #>")
+                            minionSkin = ThrowIfNull(<#= i #>, "There is no skin with the name \"<#= replacement.skin.name #>\" for body \"<#= replacement.bodyName #>\"", SkinCatalog.FindSkinsForBody(ThrowIfEquals(<#= i #>, "Body \"<#= replacement.bodyName #>\" doesn't exist", BodyCatalog.FindBodyIndex(@"<#= replacement.bodyName #>"), BodyIndex.None)).FirstOrDefault(s => s.name == @"<#= replacement.skin.name #>")),
 <# } #>
                         },
 <# } #>
@@ -355,7 +375,7 @@ if (replacement.rendererReference.accessType == ComponentAccessType.ByName) { #>
                 });
                 TryCatchThrow("Projectile Ghost Replacements", () =>
                 {
-<# foreach (var path in AssetsInfo.uniqueProjectileGhosts.Values) { #>
+<# foreach (var path in AssetsInfo.uniqueProjectileGhostsBySkin[skin]) { #>
                     TryAddComponent<ProjectileGhostController>(assetBundle.LoadAsset<GameObject>(@"<#= path #>"));
 <# } #>
 <# if (skin.projectileGhostReplacements.Count == 0) { #>
@@ -368,9 +388,9 @@ if (replacement.rendererReference.accessType == ComponentAccessType.ByName) { #>
                         {
                             projectilePrefab = Addressables.LoadAssetAsync<GameObject>(@"<#= replacement.projectilePath #>").WaitForCompletion(),
 <# if (replacement.useAddressablesPath) { #>
-                            projectileGhostReplacementPrefab = Addressables.LoadAssetAsync<GameObject>(@"<#= replacement.projectileGhostPath #>".WaitForCompletion())
+                            projectileGhostReplacementPrefab = Addressables.LoadAssetAsync<GameObject>(@"<#= replacement.projectileGhostPath #>").WaitForCompletion(),
 <# } else { #>
-                            projectileGhostReplacementPrefab = assetBundle.LoadAsset<GameObject>(@"<#= AssetsInfo.uniqueProjectileGhosts[replacement.projectileGhost] #>")
+                            projectileGhostReplacementPrefab = assetBundle.LoadAsset<GameObject>(@"<#= AssetsInfo.uniqueProjectileGhosts[replacement.projectileGhost] #>"),
 <# } #>
                         },
 <# } #>
@@ -385,9 +405,19 @@ if (replacement.rendererReference.accessType == ComponentAccessType.ByName) { #>
             }
             catch (FieldException e)
             {
-                InstanceLogger.LogWarning($"Failed to add \"{skinName}\" skin to \"{bodyName}\"");
-                InstanceLogger.LogWarning($"Field causing issue: {e.Message}");
-                InstanceLogger.LogError(e.InnerException);
+                if (e.InnerException is ElementException ie)
+                {
+					InstanceLogger.LogWarning($"Failed to add \"{skinName}\" skin to \"{bodyName}\"");
+					InstanceLogger.LogWarning($"Field causing issue: {e.Message}, element: {ie.Index}");
+					InstanceLogger.LogWarning(ie.Message);
+					InstanceLogger.LogError(e.InnerException);
+                }
+                else
+                {
+					InstanceLogger.LogWarning($"Failed to add \"{skinName}\" skin to \"{bodyName}\"");
+					InstanceLogger.LogWarning($"Field causing issue: {e.Message}");
+					InstanceLogger.LogError(e.InnerException);
+                }
             }
             catch (Exception e)
             {
@@ -396,6 +426,36 @@ if (replacement.rendererReference.accessType == ComponentAccessType.ByName) { #>
             }
         }
 <# } #>
+
+        private static T ThrowIfEquals<T>(int index, string message, T value, T expected) where T: Enum
+        {
+            if (value.Equals(expected))
+            {
+                throw new ElementException(index, message);
+            }
+
+            return value;
+        }
+        
+        private static T ThrowIfOutOfBounds<T>(int index, string message, T[] array, int elementIndex) where T: class
+        {
+            if (array is null || array.Length <= elementIndex)
+            {
+                throw new ElementException(index, message);
+            }
+
+            return array[elementIndex];
+        }
+
+        private static T ThrowIfNull<T>(int index, string message, T value) where T: class
+        {
+            if (value is null)
+            {
+                throw new ElementException(index, message);
+            }
+
+            return value;
+        }
 
         private static void TryCatchThrow(string message, Action action)
         {
@@ -411,7 +471,7 @@ if (replacement.rendererReference.accessType == ComponentAccessType.ByName) { #>
         
         private static void TryAddComponent<T>(GameObject obj) where T : Component
         {
-            if (!obj.GetComponent<T>())
+            if (obj && !obj.GetComponent<T>())
             {
                 obj.AddComponent<T>();
             }
@@ -420,6 +480,15 @@ if (replacement.rendererReference.accessType == ComponentAccessType.ByName) { #>
         private class FieldException : Exception
         {
             public FieldException(string message, Exception innerException) : base(message, innerException) { }
+        }
+
+        private class ElementException : Exception
+        {
+            public int Index { get; }
+            public ElementException(int index, string message) : base(message)
+            {
+                Index = index;
+            }
         }
     }
 }

@@ -29,7 +29,7 @@ namespace RoRSkinBuilder.CustomEditors
             {
                 if ((field.IsPrivate && field.GetCustomAttribute<SerializeField>() != null) || (field.IsPublic && field.GetCustomAttribute<HideInInspector>() == null))
                 {
-                    drawerInfo.childProperties[field.Name] = field.GetCustomAttribute<ShowWhenAttribute>();
+                    drawerInfo.childProperties[field.Name] = field.GetCustomAttributes<ShowWhenAttribute>().ToArray();
                 }
             }
 
@@ -90,16 +90,16 @@ namespace RoRSkinBuilder.CustomEditors
 
         private class DrawerInfo
         {
-            public readonly Dictionary<string, ShowWhenAttribute> childProperties = new Dictionary<string, ShowWhenAttribute>();
+            public readonly Dictionary<string, ShowWhenAttribute[]> childProperties = new Dictionary<string, ShowWhenAttribute[]>();
 
             public float GetVisiblePropertiesHeight(SerializedProperty rootProperty)
             {
-                return childProperties.Where(el => el.Value?.IsVisible(rootProperty) ?? true).Sum(el => EditorGUI.GetPropertyHeight(rootProperty.FindPropertyRelative(el.Key), true)) + propertyHeigh;
+                return childProperties.Where(p => p.Value.All(a => a.IsVisible(rootProperty))).Sum(el => EditorGUI.GetPropertyHeight(rootProperty.FindPropertyRelative(el.Key), true)) + propertyHeigh;
             }
 
             public IEnumerable<SerializedProperty> GetVisibleProperties(SerializedProperty rootProperty)
             {
-                return childProperties.Where(el => el.Value?.IsVisible(rootProperty) ?? true).Select(el => rootProperty.FindPropertyRelative(el.Key));
+                return childProperties.Where(p => p.Value.All(a => a.IsVisible(rootProperty))).Select(el => rootProperty.FindPropertyRelative(el.Key));
             }
         }
     }

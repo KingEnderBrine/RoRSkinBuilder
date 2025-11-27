@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
@@ -24,6 +25,8 @@ namespace RoRSkinBuilder.Data
         public readonly Dictionary<Material, string> materialPaths = new Dictionary<Material, string>();
         public readonly Dictionary<Mesh, string> meshPaths = new Dictionary<Mesh, string>();
         public readonly Dictionary<GameObject, string> uniqueProjectileGhosts = new Dictionary<GameObject, string>();
+        public readonly Dictionary<SkinDefinition, HashSet<string>> uniqueProjectileGhostsBySkin = new Dictionary<SkinDefinition, HashSet<string>>();
+        public readonly Dictionary<GameObject, string> uniqueGameObjectActivations = new Dictionary<GameObject, string>();
         public readonly Dictionary<string, HashSet<Material>> materialsWithRoRShader = new Dictionary<string, HashSet<Material>>();
 
         public AssetsInfo(SkinModInfo skinModInfo)
@@ -104,11 +107,23 @@ namespace RoRSkinBuilder.Data
                     }
                 }
 
+                var skinGhosts = new HashSet<string>();
                 foreach (var projectileGhostReplacement in skin.projectileGhostReplacements)
                 {
                     if (!projectileGhostReplacement.useAddressablesPath)
                     {
-                        uniqueProjectileGhosts[projectileGhostReplacement.projectileGhost] = AssetDatabase.GetAssetPath(projectileGhostReplacement.projectileGhost);
+                        var path = AssetDatabase.GetAssetPath(projectileGhostReplacement.projectileGhost);
+                        uniqueProjectileGhosts[projectileGhostReplacement.projectileGhost] = path;
+                        skinGhosts.Add(path);
+                    }
+                }
+                uniqueProjectileGhostsBySkin[skin] = skinGhosts;
+
+                foreach (var activation in skin.gameObjectActivations)
+                {
+                    if (!activation.useAddressablesKey)
+                    {
+                        uniqueGameObjectActivations[activation.prefab] = AssetDatabase.GetAssetPath(activation.prefab);
                     }
                 }
             }
@@ -135,12 +150,13 @@ namespace RoRSkinBuilder.Data
 
         public bool BuildAssetBundle()
         {
-            var assetNames = new List<string>();
+            var assetNames = new HashSet<string>();
             assetNames.AddRange(materialPaths.Values);
             assetNames.AddRange(iconPaths.Values);
             assetNames.AddRange(meshPaths.Values);
             assetNames.AddRange(iconFromColorPaths.Values);
             assetNames.AddRange(uniqueProjectileGhosts.Values);
+            assetNames.AddRange(uniqueGameObjectActivations.Values);
 
             foreach (var resource in skinModInfo.additionalResources)
             {
