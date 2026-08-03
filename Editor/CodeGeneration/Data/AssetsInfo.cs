@@ -201,10 +201,10 @@ namespace RoRSkinBuilder.Data
     ""allowUnsafeCode"": false,
     ""overrideReferences"": true,
     ""precompiledReferences"": [
-        ""RoR2-nstrip.dll"",
+        ""RoR2.dll"",
         ""BepInEx.dll"",
         ""MonoMod.RuntimeDetour.dll"",
-        ""HGCSharpUtils-nstrip.dll""
+        ""HGCSharpUtils.dll""
     ],
     ""autoReferenced"": false,
     ""defineConstraints"": [],
