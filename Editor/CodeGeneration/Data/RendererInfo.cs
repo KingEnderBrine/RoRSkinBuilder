@@ -5,8 +5,9 @@ using UnityEngine.Rendering;
 namespace RoRSkinBuilder.Data
 {
     [Serializable]
-    public class RendererInfo
+    public class RendererInfo : IConfigEnabled
     {
+        public string enableFromConfig;
         [Tooltip("Material to use")]
         public Material defaultMaterial;
         public ShadowCastingMode defaultShadowCastingMode;
@@ -14,5 +15,7 @@ namespace RoRSkinBuilder.Data
         public bool ignoreOverlays;
         [Tooltip("A model for which these settings will be applied")]
         public ComponentReference rendererReference;
+
+        public string EnableFromConfig => enableFromConfig;
     }
 }

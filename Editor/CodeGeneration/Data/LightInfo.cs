@@ -6,11 +6,14 @@ using UnityEngine;
 namespace RoRSkinBuilder.Data
 {
     [Serializable]
-    public class LightInfo
+    public class LightInfo : IConfigEnabled
     {
+        public string enableFromConfig;
         [Tooltip("Light component reference")]
         public ComponentReference lightReference;
         [Tooltip("New color")]
         public Color defaultColor = Color.white;
+
+        public string EnableFromConfig => enableFromConfig;
     }
 }

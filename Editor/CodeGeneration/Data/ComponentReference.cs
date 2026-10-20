@@ -11,9 +11,7 @@ namespace RoRSkinBuilder.Data
         [ShowWhen(nameof(accessType), false, ComponentAccessType.ByName)]
         public string name;
         [ShowWhen(nameof(accessType), false, ComponentAccessType.ByPath)]
+        [PathReference]
         public string path;
-
-        [HideInInspector]
-        public bool isExpanded;
     }
 }

@@ -5,8 +5,9 @@ using UnityEngine;
 namespace RoRSkinBuilder.Data
 {
     [Serializable]
-    public class MinionSkinReplacement
+    public class MinionSkinReplacement : IConfigEnabled
     {
+        public string enableFromConfig;
         [Tooltip("Minion body name")]
         public string bodyName;
         [Tooltip("Use skin that is added by the game/other mods")]
@@ -16,7 +17,6 @@ namespace RoRSkinBuilder.Data
         [ShowWhen(nameof(findSkinByReference), false, false)]
         public SkinDefinition skin;
 
-        [HideInInspector]
-        public bool isExpanded;
+        public string EnableFromConfig => enableFromConfig;
     }
 }

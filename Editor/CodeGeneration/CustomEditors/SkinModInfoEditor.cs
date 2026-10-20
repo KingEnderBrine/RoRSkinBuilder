@@ -1,4 +1,5 @@
-﻿using RoRSkinBuilder.Data;
+﻿using RoRSkinBuilder.CodeGeneration;
+using RoRSkinBuilder.Data;
 using RoRSkinBuilder.SkinAPI;
 using System;
 using System.Diagnostics;
@@ -36,19 +37,64 @@ namespace RoRSkinBuilder.CustomEditors
                 return;
             }
 
+            foreach (var extension in skinModInfo.extensions)
+            {
+                if ((UnityEngine.Object)extension && !extension.Validate(skinModInfo))
+                {
+                    return;
+                }
+            }
+            foreach (var skin in skinModInfo.skins)
+            {
+                if (skin)
+                {
+                    foreach (var extension in skin.extensions)
+                    {
+                        if ((UnityEngine.Object)extension && !extension.Validate(skin))
+                        {
+                            return;
+                        }
+                    }
+                }
+            }
+
             assetInfo.CreateNecessaryAssetsAndFillPaths(skinModInfo.regenerateAssemblyDefinition);
 
             var path = Path.Combine(assetInfo.modFolder, assetInfo.uccModName + "Plugin.cs");
             if (skinModInfo.regenerateCode)
             {
-                var pluginCode = new PluginCodeTemplate(skinModInfo, assetInfo);
-                File.WriteAllText(path, pluginCode.TransformText());
+                var pluginCode = new PluginBuilder(assetInfo);
+                File.WriteAllText(path, pluginCode.Build());
             }
+
+            foreach (var extension in skinModInfo.extensions)
+            {
+                if ((UnityEngine.Object)extension)
+                {
+                    extension.OnBuild(assetInfo);
+                }
+            }
+            foreach (var skin in skinModInfo.skins)
+            {
+                if (skin)
+                {
+                    foreach (var extension in skin.extensions)
+                    {
+                        if ((UnityEngine.Object)extension)
+                        {
+                            extension.OnBuild(assetInfo, skin);
+                        }
+                    }
+                }
+            }
+
+            StaticCodeBuilder.TryUpdate(assetInfo);
 
             if (!assetInfo.BuildAssetBundle())
             {
                 return;
             }
+
             assetInfo.AddCsc();
 
             var noCompilation = true;
@@ -136,6 +182,42 @@ namespace RoRSkinBuilder.CustomEditors
                 if (string.IsNullOrWhiteSpace(skin.bodyName))
                 {
                     EditorUtility.DisplayDialog("Error", $"\"Body Name\" field for a \"{skin.name}\" skin is empty", "Ok");
+                    return false;
+                }
+
+                if (!ValidateSkinParams(skin))
+                {
+                    return false;
+                }
+
+                if (skin.createLobbySkin && skin.lobbySkinOverride && !ValidateSkinParams(skin.lobbySkinOverride))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private static bool ValidateSkinParams(ISkinParams skin)
+        {
+            for (var i = 0; i < skin.GameObjectActivations.Count; i++)
+            {
+                var gameObjectActivation = skin.GameObjectActivations[i];
+                if (gameObjectActivation.spawnPrefabOnModelObject && !gameObjectActivation.useAddressablesKey && !gameObjectActivation.prefab)
+                {
+                    EditorUtility.DisplayDialog("Error", $"\"Game Object Activations[{i}].Prefab\" field for a \"{skin.Name}\" skin is empty", "Ok");
+                    return false;
+                }
+            }
+
+            for (var i = 0; i < skin.MinionSkinReplacements.Count; i++)
+            {
+                var replacement = skin.MinionSkinReplacements[i];
+                if (!replacement.findSkinByReference && !replacement.skin)
+                {
+                    EditorUtility.DisplayDialog("Error", $"\"Minion Skin Replacements[{i}].Skin\" field for a \"{skin.Name}\" skin is empty", "Ok");
+                    return false;
                 }
             }
 

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using RoRSkinBuilder.CodeGeneration.Extensions;
 using UnityEngine;
 
 namespace RoRSkinBuilder.Data
@@ -21,5 +22,6 @@ namespace RoRSkinBuilder.Data
         public bool regenerateCode = true;
         [Tooltip("Should AssemblyDefinition be regenerated on build")]
         public bool regenerateAssemblyDefinition = true;
+        public List<IModExtension> extensions = new List<IModExtension>();
     }
 }
