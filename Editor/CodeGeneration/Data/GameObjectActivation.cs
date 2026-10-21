@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using RoRSkinBuilder.CustomEditors;
+using UnityEditor;
 using UnityEngine;
 
 namespace RoRSkinBuilder.Data
@@ -31,6 +32,7 @@ namespace RoRSkinBuilder.Data
         [Tooltip("Child object prefab")]
         [ShowWhen(nameof(spawnPrefabOnModelObject), false, true)]
         [ShowWhen(nameof(useAddressablesKey), false, false)]
+        [OnChanged(typeof(GameObjectActivation), nameof(OnPrefabChanged))]
         public GameObject prefab;
         [Tooltip("Addressables key of the prefab")]
         [ShowWhen(nameof(useAddressablesKey), false, true)]
@@ -43,5 +45,17 @@ namespace RoRSkinBuilder.Data
         public PathListWrapper dynamicBonesColliderPaths;
 
         public string EnableFromConfig => enableFromConfig;
+
+        private static void OnPrefabChanged(SerializedProperty property)
+        {
+            var prefab = property.objectReferenceValue as GameObject;
+            if (prefab)
+            {
+                var self = Helpers.GetParent(property);
+                self.FindPropertyRelative(nameof(localPosition)).vector3Value = prefab.transform.localPosition;
+                self.FindPropertyRelative(nameof(localRotation)).vector3Value = prefab.transform.localRotation.eulerAngles;
+                self.FindPropertyRelative(nameof(localScale)).vector3Value = prefab.transform.localScale;
+            }
+        }
     }
 }

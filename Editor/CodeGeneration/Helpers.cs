@@ -1,12 +1,30 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using UnityEditor;
 using UnityEngine;
 
 namespace RoRSkinBuilder
 {
     public static class Helpers
     {
+        public static SerializedProperty GetParent(SerializedProperty property)
+        {
+            var dotIndex = property.propertyPath.LastIndexOf('.');
+            SerializedProperty parent;
+            if (dotIndex != -1)
+            {
+                var parentPath = property.propertyPath.Substring(0, dotIndex);
+                parent = property.serializedObject.FindProperty(parentPath);
+            }
+            else
+            {
+                parent = property.serializedObject.GetIterator();
+            }
+
+            return parent;
+        }
+
         public static string BuildGetPath(Transform childTransform, Transform parentTransform)
         {
             var path = new List<int>();

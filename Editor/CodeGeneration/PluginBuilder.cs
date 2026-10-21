@@ -630,7 +630,9 @@ namespace RoRSkinBuilder.CodeGeneration
                     {
                         code.L("renderer = ThrowIfNull(").A(i).A(", \"There is no renderer at path \\\"").A(rendererInfo.rendererReference.path).A("\\\"\", mdl.transform.Find(").Literal(rendererInfo.rendererReference.path).A(")).GetComponent<Renderer>(),");
                     }
-                    code.C();
+                    code.L("hideOnDeath = ").Literal(rendererInfo.hideOnDeath).A(",")
+                        .L("ignoresMaterialOverrides = ").Literal(rendererInfo.ignoresMaterialOverrides).A(",")
+                        .C();
                 });
         }
 

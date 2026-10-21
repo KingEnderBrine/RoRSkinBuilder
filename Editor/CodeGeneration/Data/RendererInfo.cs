@@ -15,6 +15,8 @@ namespace RoRSkinBuilder.Data
         public bool ignoreOverlays;
         [Tooltip("A model for which these settings will be applied")]
         public ComponentReference rendererReference;
+        public bool hideOnDeath;
+        public bool ignoresMaterialOverrides;
 
         public string EnableFromConfig => enableFromConfig;
     }

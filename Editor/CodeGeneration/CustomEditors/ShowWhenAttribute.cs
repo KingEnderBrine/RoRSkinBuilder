@@ -26,7 +26,7 @@ namespace RoRSkinBuilder.CustomEditors
 
         public override bool GetPropertyHeight(SerializedProperty property, GUIContent label, ref float height)
         {
-            var parent = GetParent(property);
+            var parent = Helpers.GetParent(property);
             if (IsVisible(parent))
             {
                 return false;
@@ -37,26 +37,9 @@ namespace RoRSkinBuilder.CustomEditors
             return true;
         }
 
-        private static SerializedProperty GetParent(SerializedProperty property)
-        {
-            var dotIndex = property.propertyPath.LastIndexOf('.');
-            SerializedProperty parent;
-            if (dotIndex != -1)
-            {
-                var parentPath = property.propertyPath.Substring(0, dotIndex);
-                parent = property.serializedObject.FindProperty(parentPath);
-            }
-            else
-            {
-                parent = property.serializedObject.GetIterator();
-            }
-
-            return parent;
-        }
-
         public override bool OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
-            var parent = GetParent(property);
+            var parent = Helpers.GetParent(property);
             return !IsVisible(parent);
         }
 
