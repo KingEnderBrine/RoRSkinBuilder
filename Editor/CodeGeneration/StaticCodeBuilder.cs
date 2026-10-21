@@ -41,7 +41,8 @@ namespace RoRSkinBuilder
             }
 
             var sb = new StringBuilder();
-            sb.Append(CodePre).Append(assetInfo.uccModName).AppendLine("{");
+            sb.Append(CodePre).Append(assetInfo.uccModName).AppendLine()
+                .AppendLine("{");
 
             if ((parts | Parts.Static) > 0)
             {
@@ -53,7 +54,7 @@ namespace RoRSkinBuilder
                 sb.Append(CodeDynamicSkins);
             }
 
-            sb.AppendLine("}");
+            sb.AppendLine().Append("}");
             File.WriteAllText(path, sb.ToString());
             AssetDatabase.ImportAsset(path);
 
@@ -152,18 +153,18 @@ namespace ";
     public class InsertBones : MonoBehaviour
     {
         private readonly List<SkinnedMeshRenderer> modifiedRenderers = new List<SkinnedMeshRenderer>();
+        public List<string> rendererPaths = new List<string>();
         public List<Transform> newBones = new List<Transform>();
         public string afterPath;
 
         public void Awake()
         {
-            var controller = GetComponentInParent<ModelSkinController>();
-            var model = controller.GetComponent<CharacterModel>();
-            var renderers = model.baseRendererInfos;
-            var afterTransform = controller.transform.Find(afterPath);
-            foreach (var rendererInfo in renderers)
+            var mdl = GetComponentInParent<ModelSkinController>().transform;
+            var afterTransform = mdl.transform.Find(afterPath);
+            foreach (var rendererPath in rendererPaths)
             {
-                if (rendererInfo.renderer is SkinnedMeshRenderer renderer)
+                var renderer = mdl.Find(rendererPath)?.GetComponent<SkinnedMeshRenderer>();
+                if (renderer)
                 {
                     var bones = renderer.bones;
                     var index = Array.IndexOf(bones, afterTransform);

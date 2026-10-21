@@ -260,12 +260,12 @@ namespace RoRSkinBuilder.CodeGeneration
             }
 
             code.L()
-                .L("static partial void ").A(skin.NameForMethods).A("LobbySkinAdded(SkinDef skinDef, GameObject displayPrefab);")
-                .L();
+                .L("static partial void ").A(skin.NameForMethods).A("LobbySkinAdded(SkinDef skinDef, GameObject displayPrefab);");
 
             if (skin.lobbySkinOverride)
             {
-                BuildCreateSkin(skin.lobbySkinOverride, true, skin.bodyName, skin.name, skin.CreateNameToken(SkinModInfo.author));
+                code.L();
+                BuildCreateSkin(skin.lobbySkinOverride, true, skin.bodyName, skin.name, skin.CreateNameToken(SkinModInfo.author), skin);
             }
 
             code.L()
@@ -325,9 +325,6 @@ namespace RoRSkinBuilder.CodeGeneration
                 code.L("var skin = Create").A(skin.NameForMethods).A("Skin(mdl, skinController);");
             }
 
-            BuildSkinIcon(skin);
-            BuildSkinUnlockable(skin);
-
             code.L()
                 .L("Array.Resize(ref skinController.skins, skinController.skins.Length + 1);")
                 .L("skinController.skins[skinController.skins.Length - 1] = skin;")
@@ -364,7 +361,7 @@ namespace RoRSkinBuilder.CodeGeneration
                 .L("static partial void ").A(skin.NameForMethods).A("SkinAdded(SkinDef skinDef, GameObject bodyPrefab);")
                 .L();
 
-            BuildCreateSkin(skin, false, skin.bodyName, skin.name, skin.CreateNameToken(SkinModInfo.author));
+            BuildCreateSkin(skin, false, skin.bodyName, skin.name, skin.CreateNameToken(SkinModInfo.author), skin);
 
             code.L()
                 .L("private static void Add").A(skin.NameForMethods).A("Skin()")
@@ -408,14 +405,9 @@ namespace RoRSkinBuilder.CodeGeneration
                 .L("InstanceLogger.LogWarning($\"Failed to add \\\"{skinName}\\\" skin to \\\"{bodyName}\\\" because it doesn't have \\\"ModelSkinController\\\" component\");")
                 .L("return;")
                 .C()
-                .L();
-
-            code.L("var skin = Create").A(skin.NameForMethods).A("Skin(mdl, skinController);");
-
-            BuildSkinIcon(skin);
-            BuildSkinUnlockable(skin);
-
-            code.L()
+                .L()
+                .L("var skin = Create").A(skin.NameForMethods).A("Skin(mdl, skinController);")
+                .L()
                 .L("Array.Resize(ref skinController.skins, skinController.skins.Length + 1);")
                 .L("skinController.skins[skinController.skins.Length - 1] = skin;")
                 .L()
@@ -445,7 +437,7 @@ namespace RoRSkinBuilder.CodeGeneration
                 .C();
         }
 
-        private void BuildCreateSkin(ISkinParams skin, bool isLobby, string bodyName, string name, string nameToken)
+        private void BuildCreateSkin(ISkinParams skin, bool isLobby, string bodyName, string name, string nameToken, SkinDefinition parentSkin)
         {
             code.L("private static SkinDef Create").A(bodyName.ToUpperCamelCase()).A(name.ToUpperCamelCase());
             if (isLobby)
@@ -456,8 +448,22 @@ namespace RoRSkinBuilder.CodeGeneration
             code.A("Skin(GameObject mdl, ModelSkinController skinController)")
                 .O()
                 .L("var renderers = mdl.GetComponentsInChildren<Renderer>(true);")
-                .L("var lights = mdl.GetComponentsInChildren<Light>(true);")
-                .L()
+                .L("var lights = mdl.GetComponentsInChildren<Light>(true);");
+
+            if (skin.GameObjectActivations.Any(a => a.spawnPrefabOnModelObject && a.addBonesToRenderers))
+            {
+                code
+                    .L("var skinnedRendererPaths = new List<string>();")
+                    .L("foreach (var renderer in renderers)")
+                    .O()
+                        .L("if (renderer is SkinnedMeshRenderer)")
+                        .O()
+                            .L("skinnedRendererPaths.Add(Util.BuildPrefabTransformPath(mdl.transform, renderer.transform, false, true));")
+                        .C()
+                    .C();
+            }
+
+            code.L()
                 .L("var skin = ScriptableObject.CreateInstance<SkinDef>();")
                 .L("var skinParams = ScriptableObject.CreateInstance<SkinDefParams>();")
                 .L("skin.skinDefParams = skinParams;")
@@ -465,6 +471,8 @@ namespace RoRSkinBuilder.CodeGeneration
                 .L("skin.nameToken = ").Literal(nameToken).A(";")
                 .L("skin.rootObject = mdl;");
 
+            BuildSkinIcon(parentSkin);
+            BuildSkinUnlockable(parentSkin);
             BuildSkinBaseSkins(skin);
             BuildSkinGameObjectActivations(skin);
             BuildSkinRendererInfos(skin);
@@ -675,6 +683,7 @@ namespace RoRSkinBuilder.CodeGeneration
                             {
                                 code.L(".AddComponent<InsertBones>(c => ")
                                     .O()
+                                    .L("c.rendererPaths.AddRange(skinnedRendererPaths);")
                                     .L("c.afterPath = @\"").A(FindAfterPath(skin, activation)).A("\";")
                                     .L("var t = c.transform;");
                                 foreach (var path in GetPrefabBonePaths(skin, activation))
@@ -948,7 +957,7 @@ namespace RoRSkinBuilder.CodeGeneration
                 {
                     code.L("LoadMaterialsWithReplacedShader(")
                         .O("")
-                        .L("@\"").A(row.Key).A("\"");
+                        .L("@\"").A(row.Key).A(".shader\"");
                     foreach (var material in row.Value)
                     {
                         code.L(",@\"").A(AssetsInfo.materialPaths[material]).A("\"");

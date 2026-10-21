@@ -10,7 +10,7 @@ namespace RoRSkinBuilder.Data
 {
     public class AssetsInfo
     {
-        private const string stubbedShaderPrefix = "StubbedRoR2/";
+        private const string stubbedShaderPrefix = "Stubbed";
 
         public readonly SkinModInfo skinModInfo;
         public readonly string uccModName;

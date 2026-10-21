@@ -204,11 +204,21 @@ namespace RoRSkinBuilder.CustomEditors
             for (var i = 0; i < skin.GameObjectActivations.Count; i++)
             {
                 var gameObjectActivation = skin.GameObjectActivations[i];
-                if (gameObjectActivation.spawnPrefabOnModelObject && !gameObjectActivation.useAddressablesKey && !gameObjectActivation.prefab)
+                if (gameObjectActivation.spawnPrefabOnModelObject)
                 {
-                    EditorUtility.DisplayDialog("Error", $"\"Game Object Activations[{i}].Prefab\" field for a \"{skin.Name}\" skin is empty", "Ok");
-                    return false;
+                    if (!gameObjectActivation.useAddressablesKey && !gameObjectActivation.prefab)
+                    {
+                        EditorUtility.DisplayDialog("Error", $"\"Game Object Activations[{i}].Prefab\" field for a \"{skin.Name}\" skin is empty", "Ok");
+                        return false;
+                    }
+
+                    if ((gameObjectActivation.addBonesToRenderers || gameObjectActivation.dynamicBonesColliderPaths.Count > 0) && !skin.ReferenceModel)
+                    {
+                        EditorUtility.DisplayDialog("Error", $"\"Reference Model\" field for a \"{skin.Name}\" skin is empty", "Ok");
+                        return false;
+                    }
                 }
+
             }
 
             for (var i = 0; i < skin.MinionSkinReplacements.Count; i++)
