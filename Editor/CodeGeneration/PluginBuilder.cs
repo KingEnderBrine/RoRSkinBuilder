@@ -313,8 +313,7 @@ namespace RoRSkinBuilder.CodeGeneration
                 .L("return;")
                 .C()
                 .L()
-                .L("var mdl = skinController.gameObject;")
-                .L();
+                .L("var mdl = skinController.gameObject;");
 
             if (skin.lobbySkinOverride)
             {
@@ -458,7 +457,7 @@ namespace RoRSkinBuilder.CodeGeneration
                     .O()
                         .L("if (renderer is SkinnedMeshRenderer)")
                         .O()
-                            .L("skinnedRendererPaths.Add(Util.BuildPrefabTransformPath(mdl.transform, renderer.transform, false, true));")
+                            .L("skinnedRendererPaths.Add(Util.BuildPrefabTransformPath(mdl.transform, renderer.transform, false, false));")
                         .C()
                     .C();
             }
@@ -673,11 +672,11 @@ namespace RoRSkinBuilder.CodeGeneration
                             .L("localScale = ").A(activation.localScale.ToNewString()).A(",");
                         if (activation.useAddressablesKey)
                         {
-                            code.L("prefab = Addressables.LoadAssetAsync<GameObject>(@\"").A(activation.prefabKey).A("\").WaitForCompletion()");
+                            code.L("prefab = ClonePrefab(Addressables.LoadAssetAsync<GameObject>(@\"").A(activation.prefabKey).A("\").WaitForCompletion())");
                         }
                         else
                         {
-                            code.L("prefab = assetBundle.LoadAsset<GameObject>(@\"").A(AssetsInfo.uniqueGameObjectActivations[activation.prefab]).A("\")")
+                            code.L("prefab = ClonePrefab(assetBundle.LoadAsset<GameObject>(@\"").A(AssetsInfo.uniqueGameObjectActivations[activation.prefab]).A("\"))")
                                 .O("");
                             if (activation.addBonesToRenderers)
                             {

@@ -73,6 +73,23 @@ namespace ";
         private static readonly string CodeStatic = @"
     public static class Helpers
     {
+        private static GameObject prefabHolder;
+
+        public static GameObject ClonePrefab(GameObject gameObject)
+        {
+            if (!prefabHolder)
+            {
+                prefabHolder = new GameObject(""PrefabHolder"");
+                GameObject.DontDestroyOnLoad(prefabHolder);
+                prefabHolder.SetActive(false);
+            }
+
+            var copy = GameObject.Instantiate(gameObject, prefabHolder.transform);
+            copy.AddComponent<RemoveClone>();
+            copy.name = gameObject.name;
+            return copy;
+        }
+
         public static Transform GetChild(this Transform transform, int index, out Transform child)
         {
             return child = transform.GetChild(index);
@@ -135,6 +152,14 @@ namespace ";
         }
     }
 
+    public class RemoveClone : MonoBehaviour
+    {
+        public void Awake()
+        {
+            name = name[..^7];
+        }
+    }
+
     public class FieldException : Exception
     {
         public FieldException(string message, Exception innerException) : base(message, innerException) { }
@@ -167,10 +192,11 @@ namespace ";
                 if (renderer)
                 {
                     var bones = renderer.bones;
-                    var index = Array.IndexOf(bones, afterTransform);
-                    if (index != -1)
+                    var index = Array.IndexOf(bones, afterTransform) + 1;
+                    if (index != 0)
                     {
                         Array.Resize(ref bones, bones.Length + newBones.Count);
+                        Array.Copy(bones, index, bones, index + newBones.Count, bones.Length - newBones.Count - index);
                         newBones.CopyTo(bones, index);
                         renderer.bones = bones;
                         modifiedRenderers.Add(renderer);
