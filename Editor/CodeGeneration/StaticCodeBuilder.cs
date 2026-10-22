@@ -95,9 +95,21 @@ namespace ";
             return child = transform.GetChild(index);
         }
 
-        public static GameObject AddComponent<T>(this GameObject gameObject, Action<T> modifier) where T : MonoBehaviour
+        public static GameObject WithComponent<T>(this GameObject gameObject, Action<T> modifier = null) where T : Component
         {
-            modifier(gameObject.AddComponent<T>());
+            var component = gameObject.AddComponent<T>(); 
+            modifier?.Invoke(component);
+            return gameObject;
+        }
+
+        public static GameObject WithTryComponent<T>(this GameObject gameObject, Action<T> modifier = null) where T : Component
+        {
+            if (gameObject && !gameObject.GetComponent<T>())
+            {
+                var component = gameObject.AddComponent<T>();
+                modifier?.Invoke(component);
+            }
+
             return gameObject;
         }
 
@@ -140,14 +152,6 @@ namespace ";
             catch (Exception e)
             {
                 throw new FieldException(message, e);
-            }
-        }
-
-        public static void TryAddComponent<T>(GameObject obj) where T : Component
-        {
-            if (obj && !obj.GetComponent<T>())
-            {
-                obj.AddComponent<T>();
             }
         }
     }

@@ -505,16 +505,10 @@ namespace RoRSkinBuilder.CodeGeneration
                     }
                     else
                     {
-                        code.L("projectileGhostReplacementPrefab = assetBundle.LoadAsset<GameObject>(@\"").A(AssetsInfo.uniqueProjectileGhosts[replacement.projectileGhost]).A("\"),");
+                        code.L("projectileGhostReplacementPrefab = assetBundle.LoadAsset<GameObject>(@\"").A(AssetsInfo.uniqueProjectileGhosts[replacement.projectileGhost]).A("\")")
+                            .O(".WithTryComponent<ProjectileGhostController>(),").C("");
                     }
                     code.C();
-                },
-                () =>
-                {
-                    foreach (var path in AssetsInfo.uniqueProjectileGhostsBySkin[skin])
-                    {
-                        code.L("TryAddComponent<ProjectileGhostController>(assetBundle.LoadAsset<GameObject>(@\"").A(path).A("\"));");
-                    }
                 });
         }
 
@@ -680,7 +674,7 @@ namespace RoRSkinBuilder.CodeGeneration
                                 .O("");
                             if (activation.addBonesToRenderers)
                             {
-                                code.L(".AddComponent<InsertBones>(c => ")
+                                code.L(".WithComponent<InsertBones>(c => ")
                                     .O()
                                     .L("c.rendererPaths.AddRange(skinnedRendererPaths);")
                                     .L("c.afterPath = @\"").A(FindAfterPath(skin, activation)).A("\";")
@@ -694,7 +688,7 @@ namespace RoRSkinBuilder.CodeGeneration
                             }
                             if (activation.dynamicBonesColliderPaths.Count > 0)
                             {
-                                code.L(".AddComponent<AddDynamicColliders>(c => ")
+                                code.L(".WithComponent<AddDynamicColliders>(c => ")
                                     .O();
                                 foreach (var path in activation.dynamicBonesColliderPaths)
                                 {

@@ -22,7 +22,6 @@ namespace RoRSkinBuilder.Data
         public readonly Dictionary<Material, string> materialPaths = new Dictionary<Material, string>();
         public readonly Dictionary<Mesh, string> meshPaths = new Dictionary<Mesh, string>();
         public readonly Dictionary<GameObject, string> uniqueProjectileGhosts = new Dictionary<GameObject, string>();
-        public readonly Dictionary<ISkinParams, HashSet<string>> uniqueProjectileGhostsBySkin = new Dictionary<ISkinParams, HashSet<string>>();
         public readonly Dictionary<GameObject, string> uniqueGameObjectActivations = new Dictionary<GameObject, string>();
         public readonly Dictionary<string, HashSet<Material>> materialsWithRoRShader = new Dictionary<string, HashSet<Material>>();
         public readonly Dictionary<UnityEngine.Object, string> customObjectPaths = new Dictionary<UnityEngine.Object, string>();
@@ -106,17 +105,14 @@ namespace RoRSkinBuilder.Data
                     }
                 }
 
-                var skinGhosts = new HashSet<string>();
                 foreach (var projectileGhostReplacement in skin.projectileGhostReplacements)
                 {
                     if (!projectileGhostReplacement.useAddressablesPath)
                     {
                         var path = AssetDatabase.GetAssetPath(projectileGhostReplacement.projectileGhost);
                         uniqueProjectileGhosts[projectileGhostReplacement.projectileGhost] = path;
-                        skinGhosts.Add(path);
                     }
                 }
-                uniqueProjectileGhostsBySkin[skin] = skinGhosts;
 
                 foreach (var activation in skin.gameObjectActivations)
                 {
