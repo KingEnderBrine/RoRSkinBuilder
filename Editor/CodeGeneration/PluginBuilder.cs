@@ -145,14 +145,17 @@ namespace RoRSkinBuilder.CodeGeneration
                 code.L("private static readonly List<Material> materialsWithRoRShader = new List<Material>();");
             }
 
+            var anyConfigs = false;
             foreach (var skin in ReorderedSkins)
             {
                 if (skin.config.generateEnableConfig)
                 {
+                    anyConfigs = true;
                     code.L("public static ConfigEntry<bool> ").A(skin.name.ToUpperCamelCase()).A("EnabledConfig;");
                 }
                 foreach (var config in skin.config.configEntries)
                 {
+                    anyConfigs = true;
                     code.L("public static ConfigEntry<bool> ").A(skin.name.ToUpperCamelCase()).A(config.name.ToUpperCamelCase()).A("Config;");
                 }
             }
@@ -165,6 +168,11 @@ namespace RoRSkinBuilder.CodeGeneration
                 .L("BeforeStart();")
                 .L();
 
+            if (anyConfigs)
+            {
+                code.L("Config.SaveOnConfigSet = false;");
+            }
+
             foreach (var skin in ReorderedSkins)
             {
                 if (skin.config.generateEnableConfig)
@@ -173,13 +181,19 @@ namespace RoRSkinBuilder.CodeGeneration
                 }
                 foreach (var config in skin.config.configEntries)
                 {
-                    code.L(skin.name.ToUpperCamelCase()).A(config.name.ToUpperCamelCase()).A("Config = Instance.Config.Bind(").Literal(skin.name.ToUpperCamelCase()).A(", ").Literal(config.name).A(", ").Literal(config.enabledByDefault);
+                    code.L(skin.name.ToUpperCamelCase()).A(config.name.ToUpperCamelCase()).A("Config = Config.Bind(").Literal(skin.name.ToUpperCamelCase()).A(", ").Literal(config.name).A(", ").Literal(config.enabledByDefault);
                     if (!string.IsNullOrEmpty(config.description))
                     {
                         code.A(", ").Literal(config.description);
                     }
                     code.A(");");
                 }
+            }
+
+            if (anyConfigs)
+            {
+                code.L("Config.SaveOnConfigSet = true;")
+                    .L("Config.Save();");
             }
 
             code.L()
@@ -189,7 +203,6 @@ namespace RoRSkinBuilder.CodeGeneration
                 .C()
                 .L()
                 .L("BodyCatalog.availability.CallWhenAvailable(BodyCatalogInit);")
-                .L("SurvivorCatalog.availability.CallWhenAvailable(SurvivorCatalogInit);")
                 .L("HookEndpointManager.Add(typeof(Language).GetMethod(nameof(Language.LoadStrings)), (Action<Action<Language>, Language>)LanguageLoadStrings);")
                 .L();
 
@@ -204,9 +217,7 @@ namespace RoRSkinBuilder.CodeGeneration
                 .L("partial void BeforeStart();")
                 .L("partial void AfterStart();")
                 .L("static partial void BeforeBodyCatalogInit();")
-                .L("static partial void AfterBodyCatalogInit();")
-                .L("static partial void BeforeSurvivorCatalogInit();")
-                .L("static partial void AfterSurvivorCatalogInit();");
+                .L("static partial void AfterBodyCatalogInit();");
 
             BuildReplaceShaders();
             BuildLanguageLoadStrings();
@@ -224,26 +235,9 @@ namespace RoRSkinBuilder.CodeGeneration
                 .L("AfterBodyCatalogInit();")
                 .C();
 
-            code.L()
-                .L("private static void SurvivorCatalogInit()")
-                .O()
-                .L("BeforeSurvivorCatalogInit();")
-                .L();
-            foreach (var skin in ReorderedSkins)
-            {
-                if (skin.createLobbySkin)
-                {
-                    code.L("Add").A(skin.NameForMethods).A("LobbySkin();");
-                }
-            }
-            code.L()
-                .L("AfterSurvivorCatalogInit();")
-                .C();
-
             foreach (var skin in ReorderedSkins)
             {
                 BuildAddSkin(skin);
-                BuildAddLobbySkin(skin);
             }
 
             code.C()
@@ -252,115 +246,24 @@ namespace RoRSkinBuilder.CodeGeneration
             return code.Build();
         }
 
-        private void BuildAddLobbySkin(SkinDefinition skin)
-        {
-            if (!skin.createLobbySkin)
-            {
-                return;
-            }
-
-            code.L()
-                .L("static partial void ").A(skin.NameForMethods).A("LobbySkinAdded(SkinDef skinDef, GameObject displayPrefab);");
-
-            if (skin.lobbySkinOverride)
-            {
-                code.L();
-                BuildCreateSkin(skin.lobbySkinOverride, true, skin.bodyName, skin.name, skin.CreateNameToken(SkinModInfo.author), skin);
-            }
-
-            code.L()
-                .L("private static void Add").A(skin.NameForMethods).A("LobbySkin()")
-                .O();
-            if (!string.IsNullOrWhiteSpace(skin.modDependency.value) && skin.modDependency.type == DependencyType.SoftDependency)
-            {
-                code.L("if (!BepInEx.Bootstrap.Chainloader.PluginInfos.ContainsKey(").Literal(skin.modDependency.value).A("))")
-                    .O()
-                    .L("return;")
-                    .C();
-            }
-            if (skin.config.generateEnableConfig)
-            {
-                code.L("if (!").A(skin.name.ToUpperCamelCase()).A("EnabledConfig.Value)")
-                    .O()
-                    .L("return;")
-                    .C();
-            }
-
-            code.L("var bodyName = ").Literal(skin.bodyName).A(";")
-                .L("var skinName = ").Literal(skin.name).A(";")
-                .L("try")
-                .O()
-                .L("var bodyIndex = BodyCatalog.FindBodyIndex(bodyName);")
-                .L("if (bodyIndex == BodyIndex.None)")
-                .O()
-                .L("InstanceLogger.LogWarning($\"Failed to add \\\"{skinName}\\\" lobby skin because \\\"{bodyName}\\\" doesn't exist\");")
-                .L("return;")
-                .C()
-                .L()
-                .L("var survivorIndex = SurvivorCatalog.GetSurvivorIndexFromBodyIndex(bodyIndex);")
-                .L("if (survivorIndex == SurvivorIndex.None)")
-                .O()
-                .L("InstanceLogger.LogWarning($\"Failed to add \\\"{skinName}\\\" lobby skin to \\\"{bodyName}\\\" because SurvivorDef doesn't exist\");")
-                .L("return;")
-                .C()
-                .L()
-                .L("var survivorDef = SurvivorCatalog.GetSurvivorDef(survivorIndex);")
-                .L("var displayPrefab = survivorDef.displayPrefab;")
-                .L("var skinController = displayPrefab.GetComponentInChildren<ModelSkinController>();")
-                .L("if (!skinController)")
-                .O()
-                .L("InstanceLogger.LogWarning($\"Failed to add \\\"{skinName}\\\" lobby skin to \\\"{bodyName}\\\" because it doesn't have \\\"ModelSkinController\\\" component\");")
-                .L("return;")
-                .C()
-                .L()
-                .L("var mdl = skinController.gameObject;");
-
-            if (skin.lobbySkinOverride)
-            {
-                code.L("var skin = Create").A(skin.NameForMethods).A("LobbySkin(mdl, skinController);");
-            }
-            else
-            {
-                code.L("var skin = Create").A(skin.NameForMethods).A("Skin(mdl, skinController);");
-            }
-
-            code.L()
-                .L("Array.Resize(ref skinController.skins, skinController.skins.Length + 1);")
-                .L("skinController.skins[skinController.skins.Length - 1] = skin;")
-                .L()
-                .L(skin.NameForMethods).A("LobbySkinAdded(skin, displayPrefab);")
-                .C()
-                .L("catch (FieldException e)")
-                .O()
-                .L("if (e.InnerException is ElementException ie)")
-                .O()
-                .L("InstanceLogger.LogWarning($\"Failed to add \\\"{skinName}\\\" lobby skin to \\\"{bodyName}\\\"\");")
-                .L("InstanceLogger.LogWarning($\"Field causing issue: {e.Message}, element: {ie.Index}\");")
-                .L("InstanceLogger.LogWarning(ie.Message);")
-                .L("InstanceLogger.LogError(e.InnerException);")
-                .C()
-                .L("else")
-                .O()
-                .L("InstanceLogger.LogWarning($\"Failed to add \\\"{skinName}\\\" lobby skin to \\\"{bodyName}\\\"\");")
-                .L("InstanceLogger.LogWarning($\"Field causing issue: {e.Message}\");")
-                .L("InstanceLogger.LogError(e.InnerException);")
-                .C()
-                .C()
-                .L("catch (Exception e)")
-                .O()
-                .L("InstanceLogger.LogWarning($\"Failed to add \\\"{skinName}\\\" lobby skin to \\\"{bodyName}\\\"\");")
-                .L("InstanceLogger.LogError(e);")
-                .C()
-                .C();
-        }
-
         private void BuildAddSkin(SkinDefinition skin)
         {
             code.L()
                 .L("static partial void ").A(skin.NameForMethods).A("SkinAdded(SkinDef skinDef, GameObject bodyPrefab);")
                 .L();
-
             BuildCreateSkin(skin, false, skin.bodyName, skin.name, skin.CreateNameToken(SkinModInfo.author), skin);
+
+            if (skin.createLobbySkin)
+            {
+                code.L()
+                    .L("static partial void ").A(skin.NameForMethods).A("LobbySkinAdded(SkinDef skinDef, GameObject displayPrefab);");
+
+                if (skin.lobbySkinOverride)
+                {
+                    code.L();
+                    BuildCreateSkin(skin.lobbySkinOverride, true, skin.bodyName, skin.name, skin.CreateNameToken(SkinModInfo.author), skin);
+                }
+            }
 
             code.L()
                 .L("private static void Add").A(skin.NameForMethods).A("Skin()")
@@ -379,10 +282,9 @@ namespace RoRSkinBuilder.CodeGeneration
                     .L("return;")
                     .C();
             }
-            code.L("var bodyName = ").Literal(skin.bodyName).A(";")
+            code.L()
+                .L("var bodyName = ").Literal(skin.bodyName).A(";")
                 .L("var skinName = ").Literal(skin.name).A(";")
-                .L("try")
-                .O()
                 .L("var bodyPrefab = BodyCatalog.FindBodyPrefab(bodyName);")
                 .L("if (!bodyPrefab)")
                 .O()
@@ -390,6 +292,8 @@ namespace RoRSkinBuilder.CodeGeneration
                 .L("return;")
                 .C()
                 .L()
+                .L("try")
+                .O()
                 .L("var modelLocator = bodyPrefab.GetComponent<ModelLocator>();")
                 .L("if (!modelLocator)")
                 .O()
@@ -432,8 +336,69 @@ namespace RoRSkinBuilder.CodeGeneration
                 .O()
                 .L("InstanceLogger.LogWarning($\"Failed to add \\\"{skinName}\\\" skin to \\\"{bodyName}\\\"\");")
                 .L("InstanceLogger.LogError(e);")
-                .C()
                 .C();
+
+            if (skin.createLobbySkin)
+            {
+                code.L()
+                    .L("try")
+                    .O()
+                    .L("var survivorDef = ContentManager.survivorDefs.FirstOrDefault(d => d.bodyPrefab == bodyPrefab);")
+                    .L("if (!survivorDef)")
+                    .O()
+                    .L("InstanceLogger.LogWarning($\"Failed to add \\\"{skinName}\\\" lobby skin to \\\"{bodyName}\\\" because SurvivorDef doesn't exist\");")
+                    .L("return;")
+                    .C()
+                    .L()
+                    .L("var displayPrefab = survivorDef.displayPrefab;")
+                    .L("var displaySkinController = displayPrefab.GetComponentInChildren<ModelSkinController>();")
+                    .L("if (!displaySkinController)")
+                    .O()
+                    .L("InstanceLogger.LogWarning($\"Failed to add \\\"{skinName}\\\" lobby skin to \\\"{bodyName}\\\" because it doesn't have \\\"ModelSkinController\\\" component\");")
+                    .L("return;")
+                    .C()
+                    .L()
+                    .L("var displayMdl = displaySkinController.gameObject;");
+
+                if (skin.lobbySkinOverride)
+                {
+                    code.L("var displaySkin = Create").A(skin.NameForMethods).A("LobbySkin(displayMdl, displaySkinController);");
+                }
+                else
+                {
+                    code.L("var displaySkin = Create").A(skin.NameForMethods).A("Skin(displayMdl, displaySkinController);");
+                }
+
+                code.L()
+                    .L("Array.Resize(ref displaySkinController.skins, displaySkinController.skins.Length + 1);")
+                    .L("displaySkinController.skins[^1] = displaySkin;")
+                    .L()
+                    .L(skin.NameForMethods).A("LobbySkinAdded(displaySkin, displayPrefab);")
+                    .C()
+                    .L("catch (FieldException e)")
+                    .O()
+                    .L("if (e.InnerException is ElementException ie)")
+                    .O()
+                    .L("InstanceLogger.LogWarning($\"Failed to add \\\"{skinName}\\\" lobby skin to \\\"{bodyName}\\\"\");")
+                    .L("InstanceLogger.LogWarning($\"Field causing issue: {e.Message}, element: {ie.Index}\");")
+                    .L("InstanceLogger.LogWarning(ie.Message);")
+                    .L("InstanceLogger.LogError(e.InnerException);")
+                    .C()
+                    .L("else")
+                    .O()
+                    .L("InstanceLogger.LogWarning($\"Failed to add \\\"{skinName}\\\" lobby skin to \\\"{bodyName}\\\"\");")
+                    .L("InstanceLogger.LogWarning($\"Field causing issue: {e.Message}\");")
+                    .L("InstanceLogger.LogError(e.InnerException);")
+                    .C()
+                    .C()
+                    .L("catch (Exception e)")
+                    .O()
+                    .L("InstanceLogger.LogWarning($\"Failed to add \\\"{skinName}\\\" lobby skin to \\\"{bodyName}\\\"\");")
+                    .L("InstanceLogger.LogError(e);")
+                    .C();
+            }
+
+            code.C();
         }
 
         private void BuildCreateSkin(ISkinParams skin, bool isLobby, string bodyName, string name, string nameToken, SkinDefinition parentSkin)
@@ -472,22 +437,23 @@ namespace RoRSkinBuilder.CodeGeneration
 
             BuildSkinIcon(parentSkin);
             BuildSkinUnlockable(parentSkin);
-            BuildSkinBaseSkins(skin);
-            BuildSkinGameObjectActivations(skin);
-            BuildSkinRendererInfos(skin);
-            BuildSkinMeshReplacements(skin);
-            BuildSkinLightInfos(skin);
-            BuildSkinMinionSkinReplacements(skin);
-            BuildSkinProjectileGhostReplacements(skin);
+            BuildSkinBaseSkins(skin, parentSkin);
+            BuildSkinGameObjectActivations(skin, parentSkin);
+            BuildSkinRendererInfos(skin, parentSkin);
+            BuildSkinMeshReplacements(skin, parentSkin);
+            BuildSkinLightInfos(skin, parentSkin);
+            BuildSkinMinionSkinReplacements(skin, parentSkin);
+            BuildSkinProjectileGhostReplacements(skin, parentSkin);
 
             code.L("return skin;")
                 .C();
         }
 
-        private void BuildSkinProjectileGhostReplacements(ISkinParams skin)
+        private void BuildSkinProjectileGhostReplacements(ISkinParams skin, SkinDefinition parentSkin)
         {
             BuildTryCatchThrowArray(
                 skin,
+                parentSkin,
                 "Projectile Ghost Replacements",
                 "skinParams.projectileGhostReplacements",
                 "SkinDefParams.ProjectileGhostReplacement",
@@ -512,10 +478,11 @@ namespace RoRSkinBuilder.CodeGeneration
                 });
         }
 
-        private void BuildSkinMinionSkinReplacements(ISkinParams skin)
+        private void BuildSkinMinionSkinReplacements(ISkinParams skin, SkinDefinition parentSkin)
         {
             BuildTryCatchThrowArray(
                 skin,
+                parentSkin,
                 "Minion Skin Replacements",
                 "skinParams.minionSkinReplacements",
                 "SkinDefParams.MinionSkinReplacement",
@@ -544,10 +511,11 @@ namespace RoRSkinBuilder.CodeGeneration
                 });
         }
 
-        private void BuildSkinLightInfos(ISkinParams skin)
+        private void BuildSkinLightInfos(ISkinParams skin, SkinDefinition parentSkin)
         {
             BuildTryCatchThrowArray(
                 skin,
+                parentSkin,
                 "Light Infos",
                 "skinParams.lightReplacements",
                 "CharacterModel.LightInfo",
@@ -569,10 +537,11 @@ namespace RoRSkinBuilder.CodeGeneration
                 });
         }
 
-        private void BuildSkinMeshReplacements(ISkinParams skin)
+        private void BuildSkinMeshReplacements(ISkinParams skin, SkinDefinition parentSkin)
         {
             BuildTryCatchThrowArray(
                 skin,
+                parentSkin,
                 "MeshReplacements",
                 "skinParams.meshReplacements",
                 "SkinDefParams.MeshReplacement",
@@ -581,14 +550,19 @@ namespace RoRSkinBuilder.CodeGeneration
                 {
                     code.A("new SkinDefParams.MeshReplacement")
                         .O();
-                    if (replacement.mesh == null)
+                    if (replacement.useAddressablesKey && !string.IsNullOrEmpty(replacement.meshKey))
                     {
-                        code.L("mesh = null,");
+                        code.L("mesh = Addressables.LoadAssetAsync<Mesh>(@\"").A(replacement.meshKey).A("\").WaitForCompletion(),");
                     }
-                    else
+                    else if (!replacement.useAddressablesKey && replacement.mesh)
                     {
                         code.L("mesh = assetBundle.LoadAsset<Mesh>(@\"").A(AssetsInfo.meshPaths[replacement.mesh]).A("\"),");
                     }
+                    else
+                    {
+                        code.L("mesh = null,");
+                    }
+
                     if (replacement.rendererReference.accessType == ComponentAccessType.ByName)
                     {
                         code.L("renderer = ThrowIfNull(").A(i).A(", \"There is no renderer with the name \\\"").A(replacement.rendererReference.name).A("\\\"\", renderers.FirstOrDefault(r => r.name == ").Literal(replacement.rendererReference.name).A(")),");
@@ -601,10 +575,11 @@ namespace RoRSkinBuilder.CodeGeneration
                 });
         }
 
-        private void BuildSkinRendererInfos(ISkinParams skin)
+        private void BuildSkinRendererInfos(ISkinParams skin, SkinDefinition parentSkin)
         {
             BuildTryCatchThrowArray(
                 skin,
+                parentSkin,
                 "Renderer Infos",
                 "skinParams.rendererInfos",
                 "CharacterModel.RendererInfo",
@@ -613,14 +588,19 @@ namespace RoRSkinBuilder.CodeGeneration
                 {
                     code.A("new CharacterModel.RendererInfo")
                         .O();
-                    if (rendererInfo.defaultMaterial == null)
+                    if (rendererInfo.useAddressablesKey && !string.IsNullOrEmpty(rendererInfo.materialKey))
                     {
-                        code.L("defaultMaterial = null,");
+                        code.L("defaultMaterial = Addressables.LoadAssetAsync<Material>(@\"").A(rendererInfo.materialKey).A("\").WaitForCompletion(),");
                     }
-                    else
+                    else if (!rendererInfo.useAddressablesKey && rendererInfo.defaultMaterial)
                     {
                         code.L("defaultMaterial = assetBundle.LoadAsset<Material>(@\"").A(AssetsInfo.materialPaths[rendererInfo.defaultMaterial]).A("\"),");
                     }
+                    else
+                    {
+                        code.L("defaultMaterial = null,");
+                    }
+
                     code.L("defaultShadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.").A(Enum.GetName(typeof(ShadowCastingMode), rendererInfo.defaultShadowCastingMode)).A(",")
                         .L("ignoreOverlays = ").Literal(rendererInfo.ignoreOverlays).A(",");
                     if (rendererInfo.rendererReference.accessType == ComponentAccessType.ByName)
@@ -637,10 +617,11 @@ namespace RoRSkinBuilder.CodeGeneration
                 });
         }
 
-        private void BuildSkinGameObjectActivations(ISkinParams skin)
+        private void BuildSkinGameObjectActivations(ISkinParams skin, SkinDefinition parentSkin)
         {
             BuildTryCatchThrowArray(
                 skin,
+                parentSkin,
                 "Game Object Activations",
                 "skinParams.gameObjectActivations",
                 "SkinDefParams.GameObjectActivation",
@@ -772,7 +753,7 @@ namespace RoRSkinBuilder.CodeGeneration
             code.C().A(");");
         }
 
-        private void BuildSkinBaseSkins(ISkinParams skin)
+        private void BuildSkinBaseSkins(ISkinParams skin, SkinDefinition parentSkin)
         {
             code.L("TryCatchThrow(\"Base Skins\", () =>")
                 .O();
@@ -803,6 +784,7 @@ namespace RoRSkinBuilder.CodeGeneration
 
         private void BuildTryCatchThrowArray<T>(
             ISkinParams skin,
+            SkinDefinition parentSkin,
             string errorField,
             string field,
             string type,
@@ -827,7 +809,7 @@ namespace RoRSkinBuilder.CodeGeneration
                     var item = collection[i];
                     if (!string.IsNullOrWhiteSpace(item.EnableFromConfig))
                     {
-                        code.L("if (").A(skin.Name.ToUpperCamelCase()).A(item.EnableFromConfig.ToUpperCamelCase()).A("Config.Value)")
+                        code.L("if (").A(parentSkin.name.ToUpperCamelCase()).A(item.EnableFromConfig.ToUpperCamelCase()).A("Config.Value)")
                             .O();
                     }
 

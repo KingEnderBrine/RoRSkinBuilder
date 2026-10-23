@@ -9,7 +9,6 @@ namespace RoRSkinBuilder.Data
     [Serializable]
     public class GameObjectActivation : IConfigEnabled
     {
-        public string enableFromConfig;
         public GameObjectActivationAccessType accessType = GameObjectActivationAccessType.ByPath;
         [ShowWhen(nameof(accessType), false, GameObjectActivationAccessType.ByRendererName)]
         public string rendererName;
@@ -26,7 +25,7 @@ namespace RoRSkinBuilder.Data
         [ShowWhen(nameof(spawnPrefabOnModelObject), false, true)]
         public Vector3 localScale = Vector3.one;
 
-        [Tooltip("Child object prefab")]
+        [Tooltip("Load prefab using Addressables")]
         [ShowWhen(nameof(spawnPrefabOnModelObject), false, true)]
         public bool useAddressablesKey;
         [Tooltip("Child object prefab")]
@@ -43,6 +42,7 @@ namespace RoRSkinBuilder.Data
         public bool addBonesToRenderers;
         [ShowWhen(nameof(spawnPrefabOnModelObject), false, true)]
         public PathListWrapper dynamicBonesColliderPaths;
+        public string enableFromConfig;
 
         public string EnableFromConfig => enableFromConfig;
 

@@ -8,7 +8,6 @@ namespace RoRSkinBuilder.Data
     [Serializable]
     public class ProjectileGhostReplacement : IConfigEnabled
     {
-        public string enableFromConfig;
         [Tooltip("Addressables path to the projectile GameObject")]
         public string projectilePath;
         [Tooltip("Load projectile ghost that exists in the game files")]
@@ -20,6 +19,7 @@ namespace RoRSkinBuilder.Data
         [Tooltip("Path to the projectile ghost")]
         [ShowWhen(nameof(useAddressablesPath), false, true)]
         public string projectileGhostPath;
+        public string enableFromConfig;
 
         public string EnableFromConfig => enableFromConfig;
     }

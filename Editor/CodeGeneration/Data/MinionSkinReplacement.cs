@@ -7,7 +7,6 @@ namespace RoRSkinBuilder.Data
     [Serializable]
     public class MinionSkinReplacement : IConfigEnabled
     {
-        public string enableFromConfig;
         [Tooltip("Minion body name")]
         public string bodyName;
         [Tooltip("Use skin that is added by the game/other mods")]
@@ -16,6 +15,7 @@ namespace RoRSkinBuilder.Data
         public Reference reference;
         [ShowWhen(nameof(findSkinByReference), false, false)]
         public SkinDefinition skin;
+        public string enableFromConfig;
 
         public string EnableFromConfig => enableFromConfig;
     }
