@@ -1,5 +1,4 @@
-﻿using RoRSkinBuilder.CodeGeneration;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -10,12 +9,9 @@ namespace RoRSkinBuilder.Data
 {
     public class AssetsInfo
     {
-        private static readonly Dictionary<string, string> shaderPaths = new Dictionary<string, string>()
-        {
-            ["Fake RoR/Hopoo Games/Deferred/Standard"] = "RoR2/Base/Shaders/HGStandard.shader",
-        };
+        private const string stubbedShaderPrefix = "Stubbed";
 
-        private readonly SkinModInfo skinModInfo;
+        public readonly SkinModInfo skinModInfo;
         public readonly string uccModName;
         public readonly string assetBundleName;
         public readonly string assetBundlePath;
@@ -25,9 +21,9 @@ namespace RoRSkinBuilder.Data
         public readonly Dictionary<Material, string> materialPaths = new Dictionary<Material, string>();
         public readonly Dictionary<Mesh, string> meshPaths = new Dictionary<Mesh, string>();
         public readonly Dictionary<GameObject, string> uniqueProjectileGhosts = new Dictionary<GameObject, string>();
-        public readonly Dictionary<SkinDefinition, HashSet<string>> uniqueProjectileGhostsBySkin = new Dictionary<SkinDefinition, HashSet<string>>();
         public readonly Dictionary<GameObject, string> uniqueGameObjectActivations = new Dictionary<GameObject, string>();
         public readonly Dictionary<string, HashSet<Material>> materialsWithRoRShader = new Dictionary<string, HashSet<Material>>();
+        public readonly Dictionary<UnityEngine.Object, string> customObjectPaths = new Dictionary<UnityEngine.Object, string>();
 
         public AssetsInfo(SkinModInfo skinModInfo)
         {
@@ -93,9 +89,10 @@ namespace RoRSkinBuilder.Data
                         continue;
                     }
                     materialPaths[rendererInfo.defaultMaterial] = AssetDatabase.GetAssetPath(rendererInfo.defaultMaterial);
-                    if (shaderPaths.TryGetValue(rendererInfo.defaultMaterial.shader.name, out var shaderPath))
+                    var shaderName = rendererInfo.defaultMaterial.shader.name;
+                    if (shaderName.StartsWith(stubbedShaderPrefix))
                     {
-                        materialsWithRoRShader.GetOrAdd(shaderPath, () => new HashSet<Material>()).Add(rendererInfo.defaultMaterial);
+                        materialsWithRoRShader.GetOrAdd(shaderName.Substring(stubbedShaderPrefix.Length), () => new HashSet<Material>()).Add(rendererInfo.defaultMaterial);
                     }
                 }
 
@@ -107,21 +104,18 @@ namespace RoRSkinBuilder.Data
                     }
                 }
 
-                var skinGhosts = new HashSet<string>();
                 foreach (var projectileGhostReplacement in skin.projectileGhostReplacements)
                 {
                     if (!projectileGhostReplacement.useAddressablesPath)
                     {
                         var path = AssetDatabase.GetAssetPath(projectileGhostReplacement.projectileGhost);
                         uniqueProjectileGhosts[projectileGhostReplacement.projectileGhost] = path;
-                        skinGhosts.Add(path);
                     }
                 }
-                uniqueProjectileGhostsBySkin[skin] = skinGhosts;
 
                 foreach (var activation in skin.gameObjectActivations)
                 {
-                    if (!activation.useAddressablesKey)
+                    if (!activation.useAddressablesKey && activation.prefab)
                     {
                         uniqueGameObjectActivations[activation.prefab] = AssetDatabase.GetAssetPath(activation.prefab);
                     }
@@ -157,6 +151,7 @@ namespace RoRSkinBuilder.Data
             assetNames.AddRange(iconFromColorPaths.Values);
             assetNames.AddRange(uniqueProjectileGhosts.Values);
             assetNames.AddRange(uniqueGameObjectActivations.Values);
+            assetNames.AddRange(customObjectPaths.Values);
 
             foreach (var resource in skinModInfo.additionalResources)
             {

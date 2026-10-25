@@ -12,8 +12,5 @@ namespace RoRSkinBuilder.Data
         public Sprite sprite;
         [ShowWhen(nameof(createFromColors), false, true)]
         public IconColors colors;
-
-        [HideInInspector]
-        public bool isExpanded;
     }
 }

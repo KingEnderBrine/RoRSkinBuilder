@@ -7,12 +7,13 @@ namespace RoRSkinBuilder.CustomEditors
     [CustomPropertyDrawer(typeof(IconColors))]
     public class IconColorsPropertyDrawer : PropertyDrawer
     {
-        private const float defaultPropertyHeigh = 16;
+        private const float defaultPropertyHeight = 18;
         private const float iconSide = 64;
+        private const int iconYOffset = 4;
 
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {
-            var height = defaultPropertyHeigh;
+            var height = defaultPropertyHeight;
             property.Next(true);
             for (var i = 0; i < 4; i++)
             {
@@ -31,10 +32,10 @@ namespace RoRSkinBuilder.CustomEditors
             var iconPreviewProperty = property.FindPropertyRelative("iconPreview");
 
             EditorGUI.BeginProperty(position, label, property);
-            EditorGUI.PrefixLabel(new Rect(position.x, position.y, position.width, defaultPropertyHeigh), label);
+            EditorGUI.PrefixLabel(new Rect(position.x, position.y, position.width, defaultPropertyHeight), label);
 
             EditorGUI.indentLevel++;
-            var y = position.y + defaultPropertyHeigh;
+            var y = position.y + defaultPropertyHeight;
             property.Next(true);
             for (var i = 0; i < 4; i++)
             {
@@ -49,7 +50,7 @@ namespace RoRSkinBuilder.CustomEditors
 
             var indent = EditorGUI.indentLevel;
             EditorGUI.indentLevel = 0;
-            EditorGUI.LabelField(new Rect(position.x + position.width - iconSide, position.y + defaultPropertyHeigh, iconSide, iconSide), GUIContent.none, style);
+            EditorGUI.LabelField(new Rect(position.x + position.width - iconSide, position.y + defaultPropertyHeight + iconYOffset, iconSide, iconSide), GUIContent.none, style);
             EditorGUI.indentLevel = indent;
 
             EditorGUI.indentLevel--;

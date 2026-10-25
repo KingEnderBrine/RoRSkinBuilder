@@ -14,8 +14,6 @@ namespace RoRSkinBuilder.Data
         [Tooltip("Default value for config entry")]
         [ShowWhen(nameof(generateEnableConfig), false, true)]
         public bool enableConfigDefaultValue = true;
-
-        [HideInInspector]
-        public bool isExpanded;
+        public List<ConfigEntry> configEntries;
     }
 }

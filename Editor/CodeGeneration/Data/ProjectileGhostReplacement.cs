@@ -6,9 +6,9 @@ using UnityEngine.Serialization;
 namespace RoRSkinBuilder.Data
 {
     [Serializable]
-    public class ProjectileGhostReplacement
+    public class ProjectileGhostReplacement : IConfigEnabled
     {
-        [Tooltip("Path to the projectile GameObject")]
+        [Tooltip("Addressables path to the projectile GameObject")]
         public string projectilePath;
         [Tooltip("Load projectile ghost that exists in the game files")]
         [FormerlySerializedAs("useResourcesPath")]
@@ -19,8 +19,8 @@ namespace RoRSkinBuilder.Data
         [Tooltip("Path to the projectile ghost")]
         [ShowWhen(nameof(useAddressablesPath), false, true)]
         public string projectileGhostPath;
+        public string enableFromConfig;
 
-        [HideInInspector]
-        public bool isExpanded;
+        public string EnableFromConfig => enableFromConfig;
     }
 }

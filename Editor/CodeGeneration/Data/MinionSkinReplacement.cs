@@ -5,7 +5,7 @@ using UnityEngine;
 namespace RoRSkinBuilder.Data
 {
     [Serializable]
-    public class MinionSkinReplacement
+    public class MinionSkinReplacement : IConfigEnabled
     {
         [Tooltip("Minion body name")]
         public string bodyName;
@@ -15,8 +15,8 @@ namespace RoRSkinBuilder.Data
         public Reference reference;
         [ShowWhen(nameof(findSkinByReference), false, false)]
         public SkinDefinition skin;
+        public string enableFromConfig;
 
-        [HideInInspector]
-        public bool isExpanded;
+        public string EnableFromConfig => enableFromConfig;
     }
 }

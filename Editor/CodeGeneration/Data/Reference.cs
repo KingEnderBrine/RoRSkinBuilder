@@ -12,8 +12,5 @@ namespace RoRSkinBuilder.Data
         public string name;
         [ShowWhen(nameof(accessType), false, AccessType.ByIndex)]
         public int index;
-
-        [HideInInspector]
-        public bool isExpanded;
     }
 }
