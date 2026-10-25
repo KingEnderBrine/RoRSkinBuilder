@@ -19,6 +19,5 @@ namespace RoRSkinBuilder.Data
         List<MinionSkinReplacement> MinionSkinReplacements { get; }
         List<ProjectileGhostReplacement> ProjectileGhostReplacements { get; }
         List<LightInfo> LightReplacements { get; }
-        List<ISkinExtension> Extensions { get; }
     }
 }

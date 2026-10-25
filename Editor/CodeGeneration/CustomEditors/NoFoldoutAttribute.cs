@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using RoRSkinBuilder.CustomEditors;
 using UnityEditor;
 using UnityEngine;
 
-namespace RoRSkinBuilder.CodeGeneration.CustomEditors
+namespace RoRSkinBuilder.CustomEditors
 {
     public class NoFoldoutAttribute : CompositePropertyAttribute
     {

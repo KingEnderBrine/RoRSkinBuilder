@@ -1,7 +1,5 @@
-﻿using RoRSkinBuilder.CodeGeneration.CustomEditors;
-using RoRSkinBuilder.CodeGeneration.Extensions;
+﻿using RoRSkinBuilder.Extensions;
 using RoRSkinBuilder.CustomEditors;
-using RoRSkinBuilder.Extensions;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -56,7 +54,6 @@ namespace RoRSkinBuilder.Data
         List<MinionSkinReplacement> ISkinParams.MinionSkinReplacements => minionSkinReplacements;
         List<ProjectileGhostReplacement> ISkinParams.ProjectileGhostReplacements => projectileGhostReplacements;
         List<LightInfo> ISkinParams.LightReplacements => lightReplacements;
-        List<ISkinExtension> ISkinParams.Extensions => extensions;
 
         public string CreateNameToken(string author)
         {

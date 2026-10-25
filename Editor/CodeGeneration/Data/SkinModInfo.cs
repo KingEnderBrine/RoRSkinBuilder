@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using RoRSkinBuilder.CodeGeneration.Extensions;
+using RoRSkinBuilder.Extensions;
 using UnityEngine;
 
 namespace RoRSkinBuilder.Data

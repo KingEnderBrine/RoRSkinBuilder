@@ -6,7 +6,7 @@ using RoRSkinBuilder.Data;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-namespace RoRSkinBuilder.CodeGeneration
+namespace RoRSkinBuilder
 {
     public class PluginBuilder
     {

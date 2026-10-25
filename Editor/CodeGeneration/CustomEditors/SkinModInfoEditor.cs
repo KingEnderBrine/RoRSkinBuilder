@@ -1,5 +1,4 @@
-﻿using RoRSkinBuilder.CodeGeneration;
-using RoRSkinBuilder.Data;
+﻿using RoRSkinBuilder.Data;
 using RoRSkinBuilder.SkinAPI;
 using System;
 using System.Diagnostics;
@@ -55,6 +54,17 @@ namespace RoRSkinBuilder.CustomEditors
                             return;
                         }
                     }
+
+                    if (skin.createLobbySkin && skin.lobbySkinOverride)
+                    {
+                        foreach (var extension in skin.lobbySkinOverride.extensions)
+                        {
+                            if ((UnityEngine.Object)extension && !extension.Validate(skin.lobbySkinOverride, skin))
+                            {
+                                return;
+                            }
+                        }
+                    }
                 }
             }
 
@@ -83,6 +93,17 @@ namespace RoRSkinBuilder.CustomEditors
                         if ((UnityEngine.Object)extension)
                         {
                             extension.OnBuild(assetInfo, skin);
+                        }
+                    }
+
+                    if (skin.createLobbySkin && skin.lobbySkinOverride)
+                    {
+                        foreach (var extension in skin.lobbySkinOverride.extensions)
+                        {
+                            if ((UnityEngine.Object)extension)
+                            {
+                                extension.OnBuild(assetInfo, skin.lobbySkinOverride, skin);
+                            }
                         }
                     }
                 }

@@ -31,7 +31,7 @@ namespace RoRSkinBuilder.Data
         public List<ProjectileGhostReplacement> projectileGhostReplacements;
         [Tooltip("Colors for lights")]
         public List<LightInfo> lightReplacements;
-        public List<ISkinExtension> extensions = new List<ISkinExtension>();
+        public List<ILobbySkinExtension> extensions = new List<ILobbySkinExtension>();
 
         string ISkinParams.Name => name;
         GameObject ISkinParams.ReferenceModel => referenceModel;
@@ -42,7 +42,6 @@ namespace RoRSkinBuilder.Data
         List<MinionSkinReplacement> ISkinParams.MinionSkinReplacements => minionSkinReplacements;
         List<ProjectileGhostReplacement> ISkinParams.ProjectileGhostReplacements => projectileGhostReplacements;
         List<LightInfo> ISkinParams.LightReplacements => lightReplacements;
-        List<ISkinExtension> ISkinParams.Extensions => extensions;
 
         public static void CopyFromSkin(SerializedProperty property)
         {

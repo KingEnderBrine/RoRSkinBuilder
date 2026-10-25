@@ -4,7 +4,7 @@ using System.Text;
 using UnityEditor;
 using UnityEngine;
 
-namespace RoRSkinBuilder.CodeGeneration.CustomEditors
+namespace RoRSkinBuilder.CustomEditors
 {
     [CustomPropertyDrawer(typeof(PathListWrapper))]
     public class PathListWrapperDrawer : PropertyDrawer
