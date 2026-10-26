@@ -655,17 +655,22 @@ namespace RoRSkinBuilder
                                 .O("");
                             if (activation.addBonesToRenderers)
                             {
-                                code.L(".WithComponent<InsertBones>(c => ")
-                                    .O()
-                                    .L("c.rendererPaths.AddRange(skinnedRendererPaths);")
-                                    .L("c.afterPath = @\"").A(FindAfterPath(skin, activation)).A("\";")
-                                    .L("var t = c.transform;");
-                                foreach (var path in GetPrefabBonePaths(skin, activation))
+                                var info = GetInsertBonesInfo(skin, activation);
+                                if (info != null)
                                 {
-                                    code.L("c.newBones.Add(").A(path).A(");");
-                                }
+                                    code.L(".WithComponent<InsertBones>(c => ")
+                                        .O()
+                                        .L("c.rendererPaths.AddRange(skinnedRendererPaths);")
+                                        .L("c.afterPath = @\"").A(info.afterPath).A("\";")
+                                        .L("var t = c.transform;");
+                                    if (info.bone.inRenderer)
+                                    {
+                                        code.L("c.newBones.Add(t);");
+                                    }
+                                    BuildInsertBonesPaths(info.bone.children, "t");
 
-                                code.C().A(")");
+                                    code.C().A(")");
+                                }
                             }
                             if (activation.dynamicBonesColliderPaths.Count > 0)
                             {
@@ -690,52 +695,113 @@ namespace RoRSkinBuilder
                 });
         }
 
-        private IEnumerable<string> GetPrefabBonePaths(ISkinParams skin, GameObjectActivation activation)
+        private void BuildInsertBonesPaths(List<BoneInfo> bones, string parentVariable)
         {
-            var parentTransform = skin.ReferenceModel.transform.Find(activation.path);
-            var transform = parentTransform.Find(activation.prefab.name);
-            var renderers = skin.ReferenceModel.GetComponentsInChildren<SkinnedMeshRenderer>();
-            foreach (var renderer in renderers)
+            for (var i = 0; i < bones.Count; i++)
             {
-                var index = Array.IndexOf(renderer.bones, transform);
-                if (index != -1)
-                {
-                    yield return "t";
-                    index++;
-                    var path = Helpers.BuildGetPath(renderer.bones[index], transform);
-                    while (!string.IsNullOrEmpty(path))
-                    {
-                        yield return path;
-                        index++;
-                        if (index >= renderer.bones.Length)
-                        {
-                            break;
-                        }
-                        path = Helpers.BuildGetPath(renderer.bones[index], transform);
-                    }
-                    yield break;
-                }
-            }
+                var bone = bones[i];
+                var variable = parentVariable + "_" + bone.indexInParent;
 
-            throw new KeyNotFoundException();
+                code.L();
+                if (bone.inRenderer)
+                {
+                    code.A("c.newBones.Add(");
+                }
+
+                code.A(parentVariable).A(".GetChild(").A(bone.indexInParent).A(", out var ").A(variable).A(")");
+
+                if (bone.inRenderer)
+                {
+                    code.A(")");
+                }
+
+                code.A(";");
+
+                BuildInsertBonesPaths(bone.children, variable);
+            }
         }
 
-        private string FindAfterPath(ISkinParams skin, GameObjectActivation activation)
+        private InsertBonesInfo GetInsertBonesInfo(ISkinParams skin, GameObjectActivation activation)
         {
+            var info = new InsertBonesInfo();
             var parentTransform = skin.ReferenceModel.transform.Find(activation.path);
             var transform = parentTransform.Find(activation.prefab.name);
             var renderers = skin.ReferenceModel.GetComponentsInChildren<SkinnedMeshRenderer>();
-            foreach (var renderer in renderers)
+            var rootBone = new BoneInfo();
+
+            GatherBonesInfo(rootBone, transform, info, renderers);
+            if (PruneBonesInfo(rootBone))
             {
-                var index = Array.IndexOf(renderer.bones, transform);
-                if (index != -1)
+                return null;
+            }
+
+            info.bone = rootBone.children[0];
+            return info;
+        }
+
+        private bool PruneBonesInfo(BoneInfo bone)
+        {
+            for (var i = bone.children.Count - 1; i >= 0; i--)
+            {
+                if (PruneBonesInfo(bone.children[i]))
                 {
-                    var previousTransform = renderer.bones[index - 1];
-                    return Helpers.BuildPath(previousTransform);
+                    bone.children.RemoveAt(i);
                 }
             }
 
-            throw new KeyNotFoundException();
+            return !bone.inRenderer && bone.children.Count == 0;
+        }
+
+        private void GatherBonesInfo(BoneInfo parent, Transform transform, InsertBonesInfo info, SkinnedMeshRenderer[] renderers)
+        {
+            if (!info.renderer)
+            {
+                foreach (var renderer in renderers)
+                {
+                    var index = Array.IndexOf(renderer.bones, transform);
+                    if (index != -1)
+                    {
+                        info.renderer = renderer;
+                        info.afterPath = Helpers.BuildPath(renderer.bones[index - 1]);
+                        info.startIndex = index;
+
+                        var endIndex = index;
+                        for (; endIndex < renderer.bones.Length; endIndex++)
+                        {
+                            var current = renderer.bones[endIndex];
+                            while (current)
+                            {
+                                if (current == transform)
+                                {
+                                    break;
+                                }
+                                current = current.parent;
+                            }
+
+                            if (!current)
+                            {
+                                break;
+                            }
+                        }
+
+                        info.count = endIndex - index;
+                        break;
+                    }
+                }
+            }
+
+            var bone = new BoneInfo
+            {
+                indexInParent = parent.children.Count,
+                inRenderer = info.renderer ? Array.IndexOf(info.renderer.bones, transform, info.startIndex, info.count) != -1 : false,
+            };
+
+            parent.children.Add(bone);
+            var count = transform.childCount;
+            for (var i = 0; i < count; i++)
+            {
+                GatherBonesInfo(bone, transform.GetChild(i), info, renderers);
+            }
         }
 
         private void BuildSkinUnlockable(SkinDefinition skin)
