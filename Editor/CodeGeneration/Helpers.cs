@@ -25,52 +25,6 @@ namespace RoRSkinBuilder
             return parent;
         }
 
-        public static string BuildGetPath(Transform childTransform, Transform parentTransform)
-        {
-            var path = new List<int>();
-            if (!BuildGetPath(childTransform, parentTransform, path))
-            {
-                return null;
-            }
-
-            var sb = new StringBuilder();
-            sb.Append("t");
-            for (var i = path.Count - 1; i > 0; i--)
-            {
-                sb.Append("_").Append(path[i]);
-            }
-
-            sb.Append(".GetChild(").Append(path[0]).Append(", out var t");
-            for (var i = path.Count - 1; i >= 0; i--)
-            {
-                sb.Append("_").Append(path[i]);
-            }
-            sb.Append(")");
-
-            return sb.ToString();
-        }
-
-        private static bool BuildGetPath(Transform childTransform, Transform parentTransform, List<int> path)
-        {
-            if (!childTransform)
-            {
-                return false;
-            }
-
-            if (childTransform == parentTransform)
-            {
-                return true;
-            }
-
-            if (!BuildGetPath(childTransform.parent, parentTransform, path))
-            {
-                return false;
-            }
-
-            path.Add(childTransform.GetSiblingIndex());
-            return true;
-        }
-
         public static string BuildPath(GameObject gameObject)
         {
             return BuildPath(gameObject.transform);
