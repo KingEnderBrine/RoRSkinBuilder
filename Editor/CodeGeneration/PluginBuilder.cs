@@ -802,7 +802,8 @@ namespace RoRSkinBuilder
             var count = referenceTransform.childCount;
             var indexOrder = Enumerable.Range(0, count).OrderBy(x => Array.IndexOf(info.renderer.bones, referenceTransform.GetChild(x)));
 
-            foreach (var index in indexOrder) {
+            foreach (var index in indexOrder)
+            {
                 var nextBone = referenceTransform.GetChild(index);
                 GatherBonesInfo(bone, nextBone, prefabTransform.Find(nextBone.name), info, renderers);
             }
