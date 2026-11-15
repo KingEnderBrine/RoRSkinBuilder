@@ -24,6 +24,7 @@ namespace RoRSkinBuilder.Data
         public readonly Dictionary<GameObject, string> uniqueGameObjectActivations = new Dictionary<GameObject, string>();
         public readonly Dictionary<string, HashSet<Material>> materialsWithRoRShader = new Dictionary<string, HashSet<Material>>();
         public readonly Dictionary<UnityEngine.Object, string> customObjectPaths = new Dictionary<UnityEngine.Object, string>();
+        public readonly Dictionary<GameObjectActivation, InsertBonesInfo> insertBonesInfos = new Dictionary<GameObjectActivation, InsertBonesInfo>();
 
         public AssetsInfo(SkinModInfo skinModInfo)
         {

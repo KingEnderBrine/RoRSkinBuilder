@@ -10,5 +10,6 @@ namespace RoRSkinBuilder
 		public BoneInfo bone;
         public int startIndex;
         public int count;
+		public string error;
     }
 }

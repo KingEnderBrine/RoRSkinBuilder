@@ -1,6 +1,7 @@
 ﻿using RoRSkinBuilder.Data;
 using RoRSkinBuilder.SkinAPI;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Text.RegularExpressions;
@@ -31,7 +32,7 @@ namespace RoRSkinBuilder.CustomEditors
         {
             var assetInfo = new AssetsInfo(skinModInfo);
 
-            if (!Validate(skinModInfo))
+            if (!Validate(assetInfo))
             {
                 return;
             }
@@ -175,8 +176,9 @@ namespace RoRSkinBuilder.CustomEditors
             new SkinAPIImporter(path, skinModInfo).Import();
         }
 
-        private static bool Validate(SkinModInfo skinModInfo)
+        private static bool Validate(AssetsInfo info)
         {
+            var skinModInfo = info.skinModInfo;
             if (string.IsNullOrWhiteSpace(skinModInfo.author))
             {
                 EditorUtility.DisplayDialog("Error", "\"Author\" field is empty", "Ok");
@@ -206,12 +208,12 @@ namespace RoRSkinBuilder.CustomEditors
                     return false;
                 }
 
-                if (!ValidateSkinParams(skin))
+                if (!ValidateSkinParams(info, skin))
                 {
                     return false;
                 }
 
-                if (skin.createLobbySkin && skin.lobbySkinOverride && !ValidateSkinParams(skin.lobbySkinOverride))
+                if (skin.createLobbySkin && skin.lobbySkinOverride && !ValidateSkinParams(info, skin.lobbySkinOverride))
                 {
                     return false;
                 }
@@ -220,11 +222,23 @@ namespace RoRSkinBuilder.CustomEditors
             return true;
         }
 
-        private static bool ValidateSkinParams(ISkinParams skin)
+        private static bool ValidateSkinParams(AssetsInfo info, ISkinParams skin)
         {
+            var gameObjectPaths = new HashSet<string>();
             for (var i = 0; i < skin.GameObjectActivations.Count; i++)
             {
                 var gameObjectActivation = skin.GameObjectActivations[i];
+                if (gameObjectActivation.accessType == GameObjectActivationAccessType.ByPath)
+                {
+                    if (gameObjectPaths.Contains(gameObjectActivation.path))
+                    {
+                        EditorUtility.DisplayDialog("Error", $"\"Game Object Activations[{i}].Path\" field for a \"{skin.Name}\" skin is not unique. Only one Game Object Activation is allowed per path.", "Ok");
+                        return false;
+                    }
+
+                    gameObjectPaths.Add(gameObjectActivation.path);
+                }
+
                 if (gameObjectActivation.spawnPrefabOnModelObject)
                 {
                     if (!gameObjectActivation.useAddressablesKey && !gameObjectActivation.prefab)
@@ -237,6 +251,35 @@ namespace RoRSkinBuilder.CustomEditors
                     {
                         EditorUtility.DisplayDialog("Error", $"\"Reference Model\" field for a \"{skin.Name}\" skin is empty", "Ok");
                         return false;
+                    }
+
+                    if (gameObjectActivation.addBonesToRenderers)
+                    {
+                        if (gameObjectActivation.accessType != GameObjectActivationAccessType.ByPath)
+                        {
+                            EditorUtility.DisplayDialog("Error", $"\"Game Object Activations[{i}].Access Type\" field for a \"{skin.Name}\" skin, only By Path is supported when Add Bones To Renderers is checked", "Ok");
+                            return false;
+                        }
+
+                        var insertBonesInfo = info.insertBonesInfos[gameObjectActivation] = Helpers.GetInsertBonesInfo(skin, gameObjectActivation);
+                        if (insertBonesInfo != null)
+                        {
+                            if (!string.IsNullOrEmpty(insertBonesInfo?.error))
+                            {
+                                EditorUtility.DisplayDialog("Error", $"\"Game Object Activations[{i}]\" field for a \"{skin.Name}\" skin is incorrect. {insertBonesInfo.error}", "Ok");
+                                return false;
+                            }
+
+                            for (var j = i + 1; j < skin.GameObjectActivations.Count; j++)
+                            {
+                                var secondActivation = skin.GameObjectActivations[j];
+                                if (secondActivation.accessType == GameObjectActivationAccessType.ByPath && insertBonesInfo.afterPath.StartsWith($"{secondActivation.path}/{secondActivation.prefab?.name}"))
+                                {
+                                    EditorUtility.DisplayDialog("Error", $"\"Game Object Activations[{i}]\" field for a \"{skin.Name}\" skin is incorrect. It requires bones from Game Object Activation[{j}] for adding new bones, swap their positions.", "Ok");
+                                    return false;
+                                }
+                            }
+                        }
                     }
                 }
 
