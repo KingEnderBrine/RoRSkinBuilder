@@ -21,36 +21,43 @@ namespace RoRSkinBuilder
             SkinModInfo = assetsInfo.skinModInfo;
             AssetsInfo = assetsInfo;
             ReorderedSkins = ReorderSkins(SkinModInfo.skins);
-            DistinctDependencies = GetDistinctDependencies(ReorderedSkins);
+            DistinctDependencies = GetDistinctDependencies();
         }
 
-        private Dictionary<string, DependencyType> GetDistinctDependencies(List<SkinDefinition> skins)
+        private Dictionary<string, DependencyType> GetDistinctDependencies()
         {
             var dependencies = new Dictionary<string, DependencyType>();
-            foreach (var skin in skins)
+            foreach (var skin in ReorderedSkins)
             {
-                if (skin == null)
+                if (!skin || string.IsNullOrWhiteSpace(skin.modDependency.value))
                 {
                     continue;
                 }
-                if (string.IsNullOrWhiteSpace(skin.modDependency.value))
+
+                AddDependency(dependencies, skin.modDependency);
+            }
+
+            foreach (var dependency in SkinModInfo.modDependencies)
+            {
+                AddDependency(dependencies, dependency);
+            }
+
+            return dependencies;
+
+            static void AddDependency(Dictionary<string, DependencyType> dependencies, Dependency dependency)
+            {
+                if (dependencies.TryGetValue(dependency.value, out _))
                 {
-                    continue;
-                }
-                if (dependencies.TryGetValue(skin.modDependency.value, out _))
-                {
-                    if (skin.modDependency.type == DependencyType.HardDependency)
+                    if (dependency.type == DependencyType.HardDependency)
                     {
-                        dependencies[skin.modDependency.value] = DependencyType.HardDependency;
+                        dependencies[dependency.value] = DependencyType.HardDependency;
                     }
                 }
                 else
                 {
-                    dependencies[skin.modDependency.value] = skin.modDependency.type;
+                    dependencies[dependency.value] = dependency.type;
                 }
             }
-
-            return dependencies;
         }
 
         private List<SkinDefinition> ReorderSkins(List<SkinDefinition> sourceSkins)
