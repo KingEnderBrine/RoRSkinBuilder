@@ -123,6 +123,19 @@ namespace RoRSkinBuilder.Data
                 }
             }
 
+            foreach (var additionalResource in skinModInfo.additionalResources)
+            {
+                if (additionalResource is Material material)
+                {
+                    var shaderName = material.shader.name;
+                    if (shaderName.StartsWith(stubbedShaderPrefix))
+                    {
+                        materialPaths[material] = AssetDatabase.GetAssetPath(material);
+                        materialsWithRoRShader.GetOrAdd(shaderName.Substring(stubbedShaderPrefix.Length), () => new HashSet<Material>()).Add(material);
+                    }
+                }
+            }
+
             var tmpMeshesFolder = Path.Combine(modFolder, "Meshes");
             if (Directory.Exists(tmpMeshesFolder))
             {
